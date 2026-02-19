@@ -1,10 +1,14 @@
-function openWhatsApp(){
-    window.open("https://wa.me/919154777773","_blank");
-}
+// Scroll Reveal
+window.addEventListener("scroll", function () {
+    var reveals = document.querySelectorAll(".reveal");
 
-function scrollToSection(id){
-    document.getElementById(id).scrollIntoView({
-        behavior:"smooth"
-    });
-}
+    for (var i = 0; i < reveals.length; i++) {
+        var windowHeight = window.innerHeight;
+        var elementTop = reveals[i].getBoundingClientRect().top;
+        var elementVisible = 100;
 
+        if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add("active");
+        }
+    }
+});
