@@ -147,4 +147,11 @@ color:white;
 padding:25px;
 text-align:center;
 }
+.logo {
+    width: 200px;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
 
