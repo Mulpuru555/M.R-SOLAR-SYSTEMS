@@ -159,6 +159,17 @@ text-align:center;
     display: block;
     margin: 10px auto;
 }
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.tata-logo {
+    width: 120px !important;
+    height: auto;
+}
+
+
 
 
 
