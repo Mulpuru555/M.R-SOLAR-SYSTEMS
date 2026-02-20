@@ -1,36 +1,26 @@
-/* ===== SMOOTH SCROLL ===== */
-html {
-    scroll-behavior: smooth;
-}
-
-/* ===== BODY WITH SOLAR BACKGROUND ===== */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: url("solar-bg.jpg") no-repeat center center fixed;
-background-size: cover;
+    background: linear-gradient(rgba(10,31,61,0.85), rgba(10,31,61,0.85)),
+                url("solar-bg.jpg") no-repeat center center fixed;
+    background-size: cover;
     color: white;
 }
 
-/* ===== DARK OVERLAY FOR READABILITY ===== */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(13, 27, 42, 0.85);
-    z-index: -1;
+/* OFFER */
+.offer-banner {
+    background: #ff9800;
+    text-align: center;
+    padding: 8px;
+    font-weight: bold;
 }
 
-/* ===== HEADER ===== */
-.top-header {
+/* HEADER */
+.header {
     position: sticky;
     top: 0;
-    z-index: 1000;
-    padding: 15px 20px;
-    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
 }
 
 .header-container {
@@ -39,175 +29,123 @@ body::before {
     align-items: center;
 }
 
-.mr-logo,
-.tata-logo {
-    width: 90px;
+.logo {
+    width: 80px;
 }
 
-.company-details {
-    text-align: center;
-    flex: 1;
-}
-
-.company-details h1 {
-    margin: 0;
-    font-size: 22px;
-}
-
-.partner-text {
+.partner {
+    color: #ffc107;
     font-size: 13px;
-    color: #ffd60a;
 }
 
-/* ===== GLOW EFFECT ===== */
-.glow {
-    animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-    from { filter: drop-shadow(0 0 5px #ffd60a); }
-    to { filter: drop-shadow(0 0 20px #ffb703); }
-}
-
-/* ===== NAVBAR ===== */
-.navbar {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    padding: 10px;
-    background: linear-gradient(90deg, #ffb703, #ffd60a);
-}
-
-.navbar a {
-    text-decoration: none;
-    font-weight: bold;
-    color: #000;
-    transition: 0.3s;
-}
-
-.navbar a:hover {
-    color: #fff;
-}
-
-/* ===== HERO SECTION ===== */
+/* HERO */
 .hero {
     text-align: center;
     padding: 100px 20px;
 }
 
-.hero h2 {
-    font-size: 32px;
-    margin-bottom: 15px;
-}
-
-.hero p {
-    font-size: 16px;
-    margin-bottom: 25px;
-}
-
-.hero-btn {
-    background: #ffd60a;
-    color: #000;
-    padding: 12px 30px;
-    border-radius: 5px;
+.btn {
+    background: #ffc107;
+    padding: 12px 25px;
     text-decoration: none;
+    color: black;
     font-weight: bold;
 }
 
-.hero-btn:hover {
-    background: #ffb703;
+/* SUBSIDY */
+.subsidy-box {
+    background: rgba(255,152,0,0.8);
+    text-align: center;
+    padding: 30px;
 }
 
-/* ===== SERVICES ===== */
+/* EMI */
+.emi-section {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.emi-section input {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 250px;
+}
+
+.emi-section button {
+    padding: 10px 20px;
+    background: #ffc107;
+    border: none;
+}
+
+#emi-result {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* FORM */
+.form-section {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.form-section input {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 250px;
+}
+
+.form-section button {
+    padding: 10px 20px;
+    background: #ff9800;
+    border: none;
+    color: white;
+}
+
+/* SERVICES */
 .services {
     text-align: center;
-    padding: 80px 20px;
+    padding: 60px 20px;
 }
 
-.service-box {
-    background: rgba(255, 255, 255, 0.1);
+.service-card {
+    background: rgba(255,255,255,0.1);
     padding: 20px;
     margin: 15px auto;
-    max-width: 400px;
-    border-radius: 12px;
-    backdrop-filter: blur(5px);
-    transition: 0.4s;
+    max-width: 300px;
 }
 
-.service-box:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 214, 10, 0.2);
+/* PROJECTS */
+.gallery img {
+    width: 250px;
+    margin: 10px;
 }
 
-.service-box h3 {
-    color: #ffd60a;
-}
-
-.service-box p {
-    font-size: 14px;
-    color: #ddd;
-}
-
-/* ===== CONTACT ===== */
-.contact {
+/* BRANCH */
+.branches {
     text-align: center;
-    padding: 80px 20px;
+    padding: 60px 20px;
 }
 
-.contact strong {
-    color: #ffd60a;
+.map-container {
+    margin-top: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-/* ===== WHATSAPP FLOAT ===== */
-.whatsapp-float {
+/* WHATSAPP */
+.whatsapp {
     position: fixed;
     bottom: 20px;
     right: 20px;
     background: #25d366;
     padding: 15px;
     border-radius: 50%;
-    font-size: 22px;
     text-decoration: none;
     color: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    font-size: 20px;
 }
-
-.whatsapp-float:hover {
-    background: #1ebe5b;
-}
-
-/* ===== SCROLL REVEAL ===== */
-.reveal {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: 1s ease;
-}
-
-.reveal.active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .header-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .hero h2 {
-        font-size: 22px;
-    }
-
-    .mr-logo,
-    .tata-logo {
-        width: 75px;
-    }
-}
-
-
