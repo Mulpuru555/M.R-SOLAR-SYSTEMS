@@ -1,70 +1,108 @@
 body {
+    font-family: 'Montserrat', sans-serif;
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f9ff;
+    background: #f5f7fa;
 }
 
-/* Navigation */
-nav {
-    background: #0d1b2a;
-    padding: 15px;
+.header {
     text-align: center;
+    background: white;
+    padding: 20px;
 }
 
 nav a {
+    margin: 10px;
+    text-decoration: none;
+    color: #0077b6;
+    font-weight: 600;
+}
+
+.hero {
+    background: linear-gradient(to right, #0077b6, #00b4d8);
     color: white;
-    margin: 0 15px;
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.btn-primary {
+    background: white;
+    color: #0077b6;
+    padding: 10px 20px;
     text-decoration: none;
     font-weight: bold;
+    border-radius: 5px;
 }
 
-nav a:hover {
-    color: orange;
-}
-
-/* Hero Section */
-.hero {
+.section {
+    padding: 40px 20px;
     text-align: center;
-    padding: 100px 20px;
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-    color: white;
 }
 
-.btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 12px 25px;
-    background: orange;
+.trust-strip {
+    background: #0d1b2a;
     color: white;
-    border-radius: 30px;
+    padding: 15px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    background: #e9f5ff;
+    padding: 40px 10px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    margin: 15px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.emi-box input, button {
+    padding: 10px;
+    margin: 5px;
+}
+
+.corporate-footer {
+    background: #0d1b2a;
+    color: white;
+    padding: 40px 20px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.footer-box {
+    margin: 15px;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.whatsapp, .call-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #25d366;
+    padding: 15px;
+    color: white;
+    border-radius: 50%;
     text-decoration: none;
 }
 
-.btn:hover {
-    background: darkorange;
+.call-float {
+    right: 80px;
+    background: #0077b6;
 }
 
-/* Sections */
-section {
-    padding: 50px 20px;
-    text-align: center;
-}
+/* Smooth Scroll */
+html { scroll-behavior: smooth; }
 
-/* Coverage */
-.coverage li {
-    display: inline-block;
-    margin: 8px;
-    padding: 8px 15px;
-    background: orange;
-    color: white;
-    border-radius: 20px;
-    list-style: none;
-}
-
-/* Footer */
-footer {
-    background: #0d1b2a;
-    color: white;
-    text-align: center;
-    padding: 20px;
-}
+.reveal { opacity: 0; transform: translateY(40px); transition: 0.8s; }
+.reveal.active { opacity: 1; transform: translateY(0); }
