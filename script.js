@@ -1,14 +1,11 @@
-// Scroll Reveal
-window.addEventListener("scroll", function () {
-    var reveals = document.querySelectorAll(".reveal");
+function calculateEMI() {
+    let P = document.getElementById("loan").value;
+    let r = document.getElementById("interest").value / 100 / 12;
+    let n = document.getElementById("years").value * 12;
 
-    for (var i = 0; i < reveals.length; i++) {
-        var windowHeight = window.innerHeight;
-        var elementTop = reveals[i].getBoundingClientRect().top;
-        var elementVisible = 100;
+    let EMI = (P * r * Math.pow(1 + r, n)) /
+              (Math.pow(1 + r, n) - 1);
 
-        if (elementTop < windowHeight - elementVisible) {
-            reveals[i].classList.add("active");
-        }
-    }
-});
+    document.getElementById("emi-result").innerHTML =
+        "Monthly EMI: ₹" + EMI.toFixed(2);
+}
