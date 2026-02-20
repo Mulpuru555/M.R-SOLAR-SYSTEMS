@@ -1,156 +1,114 @@
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    background: #f4f8fc;
     text-align: center;
-    background: #f4f9ff;
 }
 
-/* HEADER */
 .header {
-    background: linear-gradient(to right, #002855, #00509e);
+    background: #002855;
     color: white;
     padding: 20px;
 }
 
-.logo-section {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.main-logo {
-    width: 80px;
-}
-
-.tata-logo {
-    width: 80px;
-}
-
-.iso-text {
-    color: #FFD700;
-    font-weight: bold;
-}
-
-/* NAV */
-nav a {
-    color: white;
-    margin: 0 12px;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-/* HERO */
-.hero {
-    height: 85vh;
-    background: url('solar-bg.jpg') no-repeat center center/cover;
+.logo-row {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 40px;
+}
+
+.logo-main {
+    width: 90px;
+}
+
+.logo-tata {
+    width: 130px;
+}
+
+.iso {
+    color: #FFD700;
+    font-weight: 600;
+}
+
+nav a {
     color: white;
-    position: relative;
-}
-
-.hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-}
-
-.hero-content {
-    position: relative;
-    z-index: 2;
-}
-
-/* ANIMATION */
-.fade-in {
-    opacity: 0;
-    animation: fadeIn 1.5s forwards;
-}
-
-.delay {
-    animation-delay: 1s;
-}
-
-.delay2 {
-    animation-delay: 2s;
-}
-
-@keyframes fadeIn {
-    to { opacity: 1; }
-}
-
-/* CTA BUTTON */
-.cta-btn {
-    display: inline-block;
-    margin-top: 25px;
-    padding: 14px 30px;
-    background: linear-gradient(45deg, #FFD700, #ffb700);
-    color: black;
-    font-weight: 700;
+    margin: 0 15px;
     text-decoration: none;
-    border-radius: 40px;
-    font-size: 16px;
-    transition: 0.3s ease;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-    animation: pulse 2s infinite;
 }
 
-.cta-btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 1);
+.hero {
+    background: #00509e;
+    color: white;
+    padding: 80px 20px;
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
-    50% { box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
-    100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+.hero-box {
+    max-width: 600px;
+    margin: auto;
 }
 
-/* SECTION */
+.btn-primary {
+    background: #FFD700;
+    color: black;
+    padding: 12px 25px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
 .section {
-    padding: 50px 20px;
+    padding: 60px 20px;
 }
 
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+.section.light {
+    background: #e6f2ff;
 }
 
 .card {
     background: white;
+    max-width: 700px;
+    margin: 20px auto;
     padding: 20px;
-    width: 220px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
 
-/* INSTAGRAM */
-.instagram {
-    background: #ffe6f0;
+.emi-box {
+    max-width: 400px;
+    margin: auto;
 }
 
-.insta-btn {
-    display: inline-block;
-    padding: 10px 20px;
+.emi-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+}
+
+.emi-box button {
+    padding: 10px;
+    margin: 5px;
+    background: #002855;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-insta {
     background: #E1306C;
     color: white;
+    padding: 10px 20px;
     text-decoration: none;
     border-radius: 25px;
-    font-weight: bold;
 }
 
-/* FOOTER */
 footer {
     background: #002855;
     color: white;
     padding: 15px;
 }
 
-/* WHATSAPP FLOAT */
-.whatsapp-float {
+.whatsapp {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -159,5 +117,4 @@ footer {
     padding: 12px 18px;
     border-radius: 50px;
     text-decoration: none;
-    font-weight: bold;
 }
