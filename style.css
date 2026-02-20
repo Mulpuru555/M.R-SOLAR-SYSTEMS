@@ -85,16 +85,32 @@ nav a {
     margin-top: 20px;
 }
 
-.whatsapp:hover {
-    background: #1ebe5d;
-    transform: scale(1.1);
-    transition: 0.3s;
+/* WhatsApp Button */
+.whatsapp {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #25d366;
+    color: white;
+    padding: 15px;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 18px;
+    z-index: 1000;
 }
 
-.call-float:hover {
-    background: #005f8a;
-    transform: scale(1.1);
-    transition: 0.3s;
+/* Call Button (Above WhatsApp) */
+.call-float {
+    position: fixed;
+    bottom: 80px;   /* 👈 This moves it above WhatsApp */
+    right: 20px;
+    background: #0077b6;
+    color: white;
+    padding: 15px;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 18px;
+    z-index: 1000;
 }
 
 /* Smooth Scroll */
@@ -102,4 +118,5 @@ html { scroll-behavior: smooth; }
 
 .reveal { opacity: 0; transform: translateY(40px); transition: 0.8s; }
 .reveal.active { opacity: 1; transform: translateY(0); }
+
 
