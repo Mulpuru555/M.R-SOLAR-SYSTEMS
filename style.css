@@ -1,36 +1,42 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #f4f9ff;
     text-align: center;
+    background: #f4f9ff;
 }
 
-.top-header {
-    background: linear-gradient(to right, #003366, #0059b3);
+/* HEADER */
+.header {
+    background: linear-gradient(to right, #002855, #00509e);
     color: white;
     padding: 20px;
 }
 
-.logo {
+.logo-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.main-logo {
     width: 80px;
 }
 
-.company-name {
-    margin: 10px 0 5px 0;
-    font-size: 28px;
+.tata-logo {
+    width: 80px;
 }
 
 .iso-text {
     color: #FFD700;
     font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 15px;
+    margin: 10px 0;
 }
 
 nav a {
     color: white;
-    text-decoration: none;
     margin: 0 10px;
+    text-decoration: none;
     font-weight: 500;
 }
 
@@ -38,13 +44,23 @@ nav a:hover {
     text-decoration: underline;
 }
 
+/* HERO */
 .hero {
-    padding: 40px 20px;
+    padding: 50px 20px;
     background: white;
 }
 
+.hero h3 {
+    color: green;
+}
+
+/* SECTIONS */
 .section {
     padding: 40px 20px;
+}
+
+.section.dark {
+    background: #e6f2ff;
 }
 
 ul {
@@ -53,11 +69,25 @@ ul {
 }
 
 ul li {
-    padding: 8px 0;
+    padding: 8px;
 }
 
+/* FOOTER */
 footer {
-    background: #003366;
+    background: #002855;
     color: white;
     padding: 15px;
+}
+
+/* WHATSAPP FLOAT */
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #25D366;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
 }
