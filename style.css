@@ -19,10 +19,21 @@ body {
 .header {
     background: #0b1c2d;
     color: white;
-    padding: 20px 10%;
+    padding: 15px 8%;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.header nav {
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .header nav a {
@@ -30,7 +41,8 @@ body {
     margin-left: 20px;
     text-decoration: none;
     font-weight: 600;
-    transition: 0.3s;
+    font-size: 14px;
+    transition: 0.3s ease;
 }
 
 .header nav a:hover {
@@ -40,8 +52,10 @@ body {
 /* ================= HERO ================= */
 
 .hero {
-    background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-    url('https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+    url('https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1920&q=80') 
+    no-repeat center center/cover;
+
     height: 90vh;
     display: flex;
     align-items: center;
@@ -52,8 +66,14 @@ body {
 }
 
 .hero h2 {
-    font-size: 36px;
+    font-size: 34px;
     margin-bottom: 15px;
+    animation: fadeUp 1.2s ease forwards;
+}
+
+.hero p {
+    margin-bottom: 20px;
+    opacity: 0.9;
 }
 
 .btn-primary {
@@ -61,9 +81,9 @@ body {
     padding: 12px 25px;
     color: white;
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
 .btn-primary:hover {
@@ -88,7 +108,7 @@ section {
 .section-title {
     text-align: center;
     margin-bottom: 40px;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
 }
 
@@ -101,7 +121,13 @@ section {
     margin-bottom: 25px;
     border-radius: 10px;
     border-left: 5px solid #ff9800;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
 /* ================= STATS ================= */
@@ -118,7 +144,7 @@ section {
 }
 
 .stat-box h2 {
-    font-size: 40px;
+    font-size: 42px;
     color: #ff9800;
 }
 
@@ -145,7 +171,7 @@ section {
     padding: 10px 20px;
     border: none;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
 .emi-box button:hover {
@@ -161,9 +187,46 @@ footer {
     text-align: center;
 }
 
+/* ================= FADE ANIMATION ================= */
+
+.fade-section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s ease;
+}
+
+.fade-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ================= RESPONSIVE ================= */
 
 @media(max-width:768px){
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header nav {
+        margin-top: 10px;
+    }
+
+    .header nav a {
+        margin: 5px 10px 5px 0;
+    }
+
     .stats {
         flex-direction: column;
         align-items: center;
