@@ -8,11 +8,15 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-</head>
 
+<!-- Required for New EMI -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
 <body>
 
-<!-- HEADER -->
+<!-- ================= HEADER ================= -->
 <header class="header">
     <div class="logo-row">
         <img src="mr-logo.jpeg" class="logo-main" alt="M.R Solar Systems">
@@ -31,7 +35,7 @@
     </nav>
 </header>
 
-<!-- HERO -->
+<!-- ================= HERO ================= -->
 <section class="hero">
     <div class="hero-box">
         <h2>Trusted Solar Solutions in Tenali</h2>
@@ -45,7 +49,7 @@
     </div>
 </section>
 
-<!-- TRUST STRIP -->
+<!-- ================= TRUST STRIP ================= -->
 <section class="section reveal">
     <h2>Why Andhra Pradesh Trusts M.R Solar Systems</h2>
     <div class="trust-strip">
@@ -55,7 +59,7 @@
     </div>
 </section>
 
-<!-- STATS -->
+<!-- ================= STATS ================= -->
 <section class="stats reveal">
     <div class="stat-box">
         <h2><span class="count" data-target="200">0</span>+</h2>
@@ -73,7 +77,7 @@
     </div>
 </section>
 
-<!-- SERVICES -->
+<!-- ================= SERVICES ================= -->
 <section class="section reveal" id="services">
     <h2>Our Services</h2>
 
@@ -98,23 +102,45 @@
     </div>
 </section>
 
-<!-- EMI SECTION (OLD SIMPLE VERSION SAFE) -->
+<!-- ================= EMI (NEW VERSION) ================= -->
 <section class="section light reveal" id="emi">
-    <h2>EMI Calculator (With Subsidy)</h2>
+    <h2>EMI Calculator</h2>
 
     <div class="emi-box">
-        <input type="number" id="systemCost" placeholder="Total System Cost (₹)">
-        <input type="number" id="subsidyAmount" placeholder="Government Subsidy (₹)">
+
+        <input type="number" id="loanAmount" placeholder="Loan Amount (₹)">
         <input type="number" id="interestRate" placeholder="Interest Rate (%)">
         <input type="number" id="loanTenure" placeholder="Tenure (Years)">
+        <input type="number" id="processingFee" placeholder="Processing Fee (%)">
 
-        <button onclick="calculateEMI()">Calculate EMI</button>
+        <button type="button" onclick="calculateEMI()">Calculate</button>
+        <button type="button" onclick="resetEMI()">Reset</button>
 
-        <h3 id="emiResult"></h3>
+        <div class="emi-result-box">
+            <p><strong>Monthly EMI:</strong> ₹ <span id="monthlyEMI">0</span></p>
+            <p><strong>Total Interest:</strong> ₹ <span id="totalInterest">0</span></p>
+            <p><strong>Processing Fee:</strong> ₹ <span id="feeAmount">0</span></p>
+            <p><strong>Total Payment:</strong> ₹ <span id="totalPayment">0</span></p>
+        </div>
+
+        <canvas id="emiChart" width="300" height="300"></canvas>
+
+        <div class="emi-extra-actions">
+            <button type="button" onclick="generateSchedule()">View Amortization Schedule</button>
+            <button type="button" onclick="downloadPDF()">Download EMI Report (PDF)</button>
+        </div>
+
+        <div id="amortizationContainer" class="amortization-box"></div>
+
+        <div class="emi-breakdown-bar">
+            <div id="principalBar"></div>
+            <div id="interestBar"></div>
+        </div>
+
     </div>
 </section>
 
-<!-- SAVINGS -->
+<!-- ================= SAVINGS ================= -->
 <section class="section reveal">
     <h2>Solar Savings Estimator</h2>
 
@@ -124,7 +150,7 @@
     <h3 id="savingsResult"></h3>
 </section>
 
-<!-- INSTAGRAM -->
+<!-- ================= INSTAGRAM ================= -->
 <section class="section reveal" id="instagram">
     <h2>Follow Us On Instagram</h2>
 
@@ -134,7 +160,7 @@
     </a>
 </section>
 
-<!-- FOOTER -->
+<!-- ================= FOOTER ================= -->
 <footer class="corporate-footer">
     <div class="footer-container">
 
@@ -166,7 +192,7 @@
     </div>
 </footer>
 
-<!-- FLOATING BUTTONS -->
+<!-- ================= FLOATING BUTTONS ================= -->
 <a href="https://wa.me/919154777773?text=Hello%20M.R%20Solar%20Systems,%20I%20am%20interested%20in%20solar%20installation."
 target="_blank" class="whatsapp">💬</a>
 
