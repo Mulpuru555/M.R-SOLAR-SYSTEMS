@@ -1,16 +1,20 @@
-/* ================= EMI CALCULATOR + PIE CHART ================= */
+// ================= EMI CALCULATOR =================
 
 let emiChart;
 
 function calculateEMI() {
-    let P = parseFloat(document.getElementById("loanAmount").value);
-    let R = parseFloat(document.getElementById("interestRate").value) / 12 / 100;
-    let N = parseFloat(document.getElementById("loanTenure").value) * 12;
 
-    if (!P || !R || !N) {
+    let P = parseFloat(document.getElementById("loanAmount").value);
+    let annualRate = parseFloat(document.getElementById("interestRate").value);
+    let years = parseFloat(document.getElementById("loanTenure").value);
+
+    if (!P || !annualRate || !years) {
         document.getElementById("emiResult").innerText = "Please fill all fields.";
         return;
     }
+
+    let R = annualRate / 12 / 100;
+    let N = years * 12;
 
     let EMI = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
     let totalPayment = EMI * N;
@@ -38,37 +42,27 @@ function calculateEMI() {
 }
 
 
-/* ================= SOLAR SAVINGS ================= */
-
-function calculateSavings() {
-    let bill = parseFloat(document.getElementById("monthlyBill").value);
-
-    if (!bill) {
-        document.getElementById("savingsResult").innerText = "Enter bill amount.";
-        return;
-    }
-
-    let newBill = bill * 0.1;
-    let savings = bill - newBill;
-
-    document.getElementById("savingsResult").innerText =
-        "Estimated Monthly Savings: ₹" + savings.toFixed(0);
-}
-
-
-/* ================= PAYBACK CALCULATOR ================= */
+// ================= PAYBACK CALCULATOR =================
 
 function calculatePayback() {
+
     let cost = parseFloat(document.getElementById("systemCost").value);
     let before = parseFloat(document.getElementById("beforeBill").value);
     let after = parseFloat(document.getElementById("afterBill").value);
 
     if (!cost || !before || !after) {
-        document.getElementById("paybackResult").innerText = "Fill all fields.";
+        document.getElementById("paybackResult").innerText = "Please fill all fields.";
         return;
     }
 
     let monthlySavings = before - after;
+
+    if (monthlySavings <= 0) {
+        document.getElementById("paybackResult").innerText =
+            "Monthly savings must be greater than zero.";
+        return;
+    }
+
     let annualSavings = monthlySavings * 12;
     let payback = (cost / annualSavings).toFixed(1);
 
@@ -78,30 +72,27 @@ function calculatePayback() {
 }
 
 
-/* ================= COUNT ANIMATION ================= */
+// ================= WHATSAPP SERVICE REQUEST =================
 
-function animateCounters() {
-    const counters = document.querySelectorAll('.count');
+function sendWhatsApp() {
 
-    counters.forEach(counter => {
-        const target = +counter.getAttribute('data-target');
-        const speed = 200;
-        const increment = target / speed;
+    let name = document.getElementById("name").value;
+    let mobile = document.getElementById("mobile").value;
+    let location = document.getElementById("locationInput").value;
+    let type = document.getElementById("serviceType").value;
 
-        let count = 0;
+    if (!name || !mobile || !location) {
+        alert("Please fill all fields.");
+        return;
+    }
 
-        const updateCount = () => {
-            if (count < target) {
-                count += increment;
-                counter.innerText = Math.ceil(count);
-                setTimeout(updateCount, 10);
-            } else {
-                counter.innerText = target;
-            }
-        };
+    let message = `Service Request:%0A
+Name: ${name}%0A
+Mobile: ${mobile}%0A
+Location: ${location}%0A
+Type: ${type}`;
 
-        updateCount();
-    });
+    let whatsappURL = `https://wa.me/919154777773?text=${message}`;
+
+    window.open(whatsappURL, "_blank");
 }
-
-animateCounters();
