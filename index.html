@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <title>M.R Solar Systems | Solar Company in Tenali</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ISO 9001:2015 Certified Solar Company in Tenali. Authorized Tata Power Solar Channel Partner providing Residential & Commercial Solar Installations with Government Subsidy Support.">
+<meta name="description" content="ISO 9001:2015 Certified Solar Company in Tenali. Authorized Tata Power Solar Channel Partner providing Residential & Commercial Solar Installations.">
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header class="header">
     <div class="logo-row">
         <img src="mr-logo.jpeg" class="logo-main" alt="M.R Solar Systems">
@@ -38,6 +37,7 @@
         <h2>Trusted Solar Solutions in Tenali</h2>
         <p>Install 3kW System & Get Up To ₹78,000 Government Subsidy</p>
         <p><strong>Serving All Districts Across Andhra Pradesh</strong></p>
+
         <a href="https://wa.me/919154777773?text=Hello%20M.R%20Solar%20Systems,%20I%20am%20interested%20in%20solar%20installation."
         target="_blank" class="btn-primary">
             Get Free Consultation
@@ -45,28 +45,28 @@
     </div>
 </section>
 
-<!-- TRUST -->
+<!-- TRUST STRIP -->
 <section class="section reveal">
-<h2>Why Andhra Pradesh Trusts M.R Solar Systems</h2>
-<div class="trust-strip">
-ISO 9001:2015 Certified • Authorized Tata Power Solar Channel Partner • 
-25-Year Panel Warranty • Complete Government Subsidy Support • 
-Serving All Districts Across Andhra Pradesh
-</div>
+    <h2>Why Andhra Pradesh Trusts M.R Solar Systems</h2>
+    <div class="trust-strip">
+        ISO 9001:2015 Certified • Authorized Tata Power Solar Channel Partner • 
+        25-Year Panel Warranty • Complete Government Subsidy Support • 
+        Serving All Districts Across Andhra Pradesh
+    </div>
 </section>
 
 <!-- STATS -->
 <section class="stats reveal">
     <div class="stat-box">
-    <h2>
-        <span class="count" data-target="200">0</span>+
-    </h2>
-    <p>Total Installations</p>
-</div>
+        <h2><span class="count" data-target="200">0</span>+</h2>
+        <p>Total Installations</p>
+    </div>
+
     <div class="stat-box">
         <h2 class="count" data-target="5">0</h2>
         <p>Years Experience</p>
     </div>
+
     <div class="stat-box">
         <h2 class="count" data-target="25">0</h2>
         <p>Years Warranty</p>
@@ -98,65 +98,46 @@ Serving All Districts Across Andhra Pradesh
     </div>
 </section>
 
-<!-- PREMIUM EMI SECTION -->
-<div class="premium-emi">
-
+<!-- EMI SECTION (OLD SIMPLE VERSION SAFE) -->
 <section class="section light reveal" id="emi">
-    <h2>EMI Calculator</h2>
+    <h2>EMI Calculator (With Subsidy)</h2>
 
     <div class="emi-box">
-        <input type="number" id="loanAmount" placeholder="Loan Amount (₹)">
+        <input type="number" id="systemCost" placeholder="Total System Cost (₹)">
+        <input type="number" id="subsidyAmount" placeholder="Government Subsidy (₹)">
         <input type="number" id="interestRate" placeholder="Interest Rate (%)">
         <input type="number" id="loanTenure" placeholder="Tenure (Years)">
-        <input type="number" id="processingFee" placeholder="Processing Fee (%)">
 
-        <button onclick="calculateEMI()">Calculate</button>
-        <button onclick="resetEMI()">Reset</button>
+        <button onclick="calculateEMI()">Calculate EMI</button>
 
-        <div class="emi-result-box">
-            <p><strong>Monthly EMI:</strong> ₹ <span id="monthlyEMI">0</span></p>
-            <p><strong>Total Interest:</strong> ₹ <span id="totalInterest">0</span></p>
-            <p><strong>Processing Fee:</strong> ₹ <span id="feeAmount">0</span></p>
-            <p><strong>Total Payment:</strong> ₹ <span id="totalPayment">0</span></p>
-        </div>
-
-        <canvas id="emiChart" width="300" height="300"></canvas>
-
-        <div class="emi-extra-actions">
-            <button onclick="generateSchedule()">View Amortization Schedule</button>
-            <button onclick="downloadPDF()">Download EMI Report (PDF)</button>
-        </div>
-
-        <div id="amortizationContainer" class="amortization-box"></div>
-
-        <div class="emi-breakdown-bar">
-            <div id="principalBar"></div>
-            <div id="interestBar"></div>
-        </div>
-
+        <h3 id="emiResult"></h3>
     </div>
 </section>
 
-
-
 <!-- SAVINGS -->
 <section class="section reveal">
-<h2>Solar Savings Estimator</h2>
-<input type="number" id="monthlyBill" placeholder="Enter Monthly Electricity Bill (₹)">
-<button onclick="calculateSavings()">Calculate Savings</button>
-<h3 id="savingsResult"></h3>
+    <h2>Solar Savings Estimator</h2>
+
+    <input type="number" id="monthlyBill" placeholder="Enter Monthly Electricity Bill (₹)">
+    <button onclick="calculateSavings()">Calculate Savings</button>
+
+    <h3 id="savingsResult"></h3>
 </section>
 
 <!-- INSTAGRAM -->
 <section class="section reveal" id="instagram">
     <h2>Follow Us On Instagram</h2>
-    <a href="https://www.instagram.com/m.r_solar_systems?igsh=MTNoemM2dWd6MzFjMA==" target="_blank" class="btn-insta">
+
+    <a href="https://www.instagram.com/m.r_solar_systems?igsh=MTNoemM2dWd6MzFjMA==" 
+    target="_blank" class="btn-insta">
         Visit Instagram
     </a>
 </section>
 
+<!-- FOOTER -->
 <footer class="corporate-footer">
     <div class="footer-container">
+
         <div class="footer-box">
             <h3>M.R Solar Systems</h3>
             <p>ISO 9001:2015 Certified</p>
@@ -177,6 +158,7 @@ Serving All Districts Across Andhra Pradesh
             <p>📍 Tenali, Andhra Pradesh</p>
             <p>📞 9154777773</p>
         </div>
+
     </div>
 
     <div class="footer-bottom">
@@ -184,18 +166,13 @@ Serving All Districts Across Andhra Pradesh
     </div>
 </footer>
 
+<!-- FLOATING BUTTONS -->
 <a href="https://wa.me/919154777773?text=Hello%20M.R%20Solar%20Systems,%20I%20am%20interested%20in%20solar%20installation."
-target="_blank" class="whatsapp">
-    💬
-</a>
+target="_blank" class="whatsapp">💬</a>
 
 <a href="tel:9154777773" class="call-float">📞</a>
 
 <script src="script.js"></script>
+
 </body>
 </html>
-
-
-
-
-
