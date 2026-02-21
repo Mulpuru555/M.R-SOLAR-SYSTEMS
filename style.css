@@ -1,225 +1,96 @@
 body {
-    font-family: 'Montserrat', sans-serif;
     margin: 0;
-    background: #f5f7fa;
+    font-family: 'Montserrat', sans-serif;
+    background: #0f0f0f;
+    color: white;
 }
 
 .header {
-    text-align: center;
-    background: white;
+    background: black;
     padding: 20px;
+    text-align: center;
 }
 
-nav a {
+.header nav a {
+    color: white;
     margin: 10px;
     text-decoration: none;
-    color: #0077b6;
-    font-weight: 600;
 }
 
 .hero {
-    background: linear-gradient(to right, #0077b6, #00b4d8);
-    color: white;
+    height: 100vh;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url('https://images.unsplash.com/photo-1509395176047-4a66953fd231');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    padding: 80px 20px;
 }
 
 .btn-primary {
-    background: white;
-    color: #0077b6;
-    padding: 10px 20px;
+    padding: 12px 25px;
+    background: #ffb703;
+    color: black;
     text-decoration: none;
     font-weight: bold;
-    border-radius: 5px;
 }
 
-.section {
-    padding: 40px 20px;
+.dark-section, .light-section {
+    padding: 60px 20px;
     text-align: center;
 }
 
-.trust-strip {
-    background: #0d1b2a;
-    color: white;
-    padding: 15px;
+.dark-section { background: #111; }
+.light-section { background: #1c1c1c; }
+
+.section-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+}
+
+.product-card {
+    background: #1a1a1a;
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 600px;
+    border-radius: 10px;
+}
+
+.product-card ul {
+    list-style: none;
+    padding: 0;
 }
 
 .stats {
     display: flex;
-    justify-content: space-around;
-    background: #e9f5ff;
-    padding: 40px 10px;
-    flex-wrap: wrap;
-}
-
-.card {
-    background: white;
-    margin: 15px;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.emi-box input, button {
-    padding: 10px;
-    margin: 5px;
-}
-
-.corporate-footer {
-    background: #0d1b2a;
-    color: white;
-    padding: 40px 20px;
-}
-
-.footer-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.footer-box {
-    margin: 15px;
-}
-
-.footer-bottom {
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* ===== Floating Buttons Clean Layout ===== */
-
-.whatsapp {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #25d366;
-    color: white;
-    width: 55px;
-    height: 55px;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    text-decoration: none;
-    font-size: 22px;
-    z-index: 9999;
+    gap: 40px;
 }
 
-.call-float {
-    position: fixed;
-    bottom: 90px;   /* Above WhatsApp */
-    right: 20px;
-    background: #0077b6;
-    color: white;
-    width: 55px;
-    height: 55px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    text-decoration: none;
-    font-size: 22px;
-    z-index: 9999;
-}
-
-.whatsapp:hover {
-    background: #1ebe5d;
-    transform: scale(1.1);
-    transition: 0.3s;
-}
-
-.call-float:hover {
-    background: #005f8a;
-    transform: scale(1.1);
-    transition: 0.3s;
-}
-
-/* Smooth Scroll */
-html { scroll-behavior: smooth; }
-
-.reveal { opacity: 0; transform: translateY(40px); transition: 0.8s; }
-.reveal.active { opacity: 1; transform: translateY(0); }
-
-/* PREMIUM EMI ISOLATED STYLE */
-
-.premium-emi .emi-box {
+.leader {
+    margin: 30px auto;
     max-width: 600px;
-    margin: auto;
 }
 
-.premium-emi .emi-box input {
-    width: 100%;
+.emi-box input {
+    display: block;
+    margin: 10px auto;
     padding: 10px;
-    margin: 8px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    width: 250px;
 }
 
-.premium-emi .emi-box button {
-    padding: 10px 15px;
-    margin: 5px 5px 5px 0;
-    background: #0077b6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.premium-emi .emi-box button:hover {
-    background: #005f8a;
-}
-
-.premium-emi .emi-result-box {
-    background: #ffffff;
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.premium-emi .amortization-box {
-    margin-top: 25px;
-    overflow-x: auto;
-}
-
-.premium-emi .amortization-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: white;
-}
-
-.premium-emi .amortization-table th,
-.premium-emi .amortization-table td {
-    border: 1px solid #ccc;
-    padding: 8px;
+.whatsapp, .call-float {
+    position: fixed;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
     text-align: center;
+    line-height: 50px;
+    font-size: 20px;
 }
 
-.premium-emi .amortization-table th {
-    background: #0077b6;
-    color: white;
-}
-
-.premium-emi .emi-breakdown-bar {
-    display: flex;
-    height: 25px;
-    margin-top: 20px;
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid #ccc;
-}
-
-.premium-emi #principalBar {
-    background: #f4a62a;
-    width: 0%;
-    transition: width 1s ease;
-}
-
-.premium-emi #interestBar {
-    background: #00c2a8;
-    width: 0%;
-    transition: width 1s ease;
-}
-
-
+.whatsapp { bottom: 20px; background: #25d366; }
+.call-float { bottom: 80px; background: #ffb703; color: black; }
