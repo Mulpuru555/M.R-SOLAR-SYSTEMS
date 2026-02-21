@@ -1,4 +1,49 @@
-// ================= EMI CALCULATOR =================
+// ================= COUNTER ANIMATION =================
+
+function animateCounters() {
+    const counters = document.querySelectorAll(".stat-box h2");
+
+    counters.forEach(counter => {
+        const target = parseInt(counter.innerText);
+        let count = 0;
+        const speed = target / 100;
+
+        const update = () => {
+            if (count < target) {
+                count += speed;
+                counter.innerText = Math.ceil(count) + "+";
+                requestAnimationFrame(update);
+            } else {
+                counter.innerText = target + "+";
+            }
+        };
+
+        update();
+    });
+}
+
+window.addEventListener("load", animateCounters);
+
+
+// ================= SCROLL FADE =================
+
+const sections = document.querySelectorAll("section");
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("fade-section", "visible");
+        }
+    });
+}, { threshold: 0.2 });
+
+sections.forEach(section => {
+    section.classList.add("fade-section");
+    observer.observe(section);
+});
+
+
+// ================= EMI =================
 
 let emiChart;
 
@@ -25,9 +70,7 @@ function calculateEMI() {
 
     let ctx = document.getElementById("emiChart");
 
-    if (emiChart) {
-        emiChart.destroy();
-    }
+    if (emiChart) emiChart.destroy();
 
     emiChart = new Chart(ctx, {
         type: 'pie',
@@ -42,7 +85,7 @@ function calculateEMI() {
 }
 
 
-// ================= PAYBACK CALCULATOR =================
+// ================= PAYBACK =================
 
 function calculatePayback() {
 
@@ -72,7 +115,7 @@ function calculatePayback() {
 }
 
 
-// ================= WHATSAPP SERVICE REQUEST =================
+// ================= WHATSAPP =================
 
 function sendWhatsApp() {
 
@@ -92,7 +135,7 @@ Mobile: ${mobile}%0A
 Location: ${location}%0A
 Type: ${type}`;
 
-    let whatsappURL = `https://wa.me/919154777773?text=${message}`;
+    let url = `https://wa.me/919154777773?text=${message}`;
 
-    window.open(whatsappURL, "_blank");
+    window.open(url, "_blank");
 }
