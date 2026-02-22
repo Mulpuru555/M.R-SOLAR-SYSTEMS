@@ -247,18 +247,5 @@ Location: ${location}`;
 
     closeLeadPopup();
 }
-// ================= MOBILE MENU =================
 
-document.addEventListener("DOMContentLoaded", function () {
-
-    const menuBtn = document.querySelector(".menu-toggle");
-    const nav = document.getElementById("navMenu");
-
-    if (menuBtn && nav) {
-        menuBtn.addEventListener("click", function () {
-            nav.classList.toggle("active");
-        });
-    }
-
-});
 
