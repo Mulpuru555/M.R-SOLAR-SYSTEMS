@@ -254,7 +254,13 @@ let currentGallery = [];
 let currentIndex = 0;
 
 // Residential images (leave empty for now or add later)
-const residentialImages = [];
+const residentialImages = [
+    "images/res1.jpeg",
+    "images/res2.jpeg",
+    "images/res3.jpeg",
+    "images/res4.jpeg",
+    "images/res6.jpeg"
+];
 
 // Commercial images (currently empty)
 const commercialImages = [];
@@ -303,4 +309,5 @@ function prevImage() {
     }
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
+
 
