@@ -16,11 +16,7 @@ body {
 
 /* ===== CLEAN PREMIUM HEADER ===== */
 
-.header {
-    background: #0b1c2d;
-    padding: 25px 6%;
-    text-align: center;
-}
+
 
 /* Brand Wrapper */
 .brand-wrapper {
@@ -78,13 +74,6 @@ body {
 
 /* ===== NAVIGATION SAME STYLE ===== */
 
-.nav-menu {
-    background: #0b1c2d;
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    padding-bottom: 15px;
-}
 
 .nav-menu a {
     color: white;
@@ -637,6 +626,7 @@ footer {
     font-size: 22px;
     margin-top: 40px;
 }
+
 
 
 
