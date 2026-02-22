@@ -423,84 +423,88 @@ footer {
     color: #ff9800;
 }
 
-/* NEW HEADER STRUCTURE */
+/* HEADER MAIN */
 .header {
+    background: #0b1c2d;
+    color: white;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
     position: relative;
 }
 
+/* LEFT */
 .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .mr-logo {
-    height: 60px;
+    width: 60px;
 }
 
+.brand-title {
+    font-size: 20px;
+    margin: 0;
+}
+
+.brand-subtitle {
+    font-size: 12px;
+    color: orange;
+    margin: 0;
+}
+
+/* RIGHT */
 .header-right {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 20px;
 }
 
 .tata-logo {
-    height: 100px !important;
+    height: 100px;
 }
 
+/* MENU BUTTON */
 .menu-toggle {
     font-size: 28px;
     cursor: pointer;
     display: none;
 }
 
-/* NAV MENU */
+/* NAV DESKTOP */
 .nav-menu {
     display: flex;
-    gap: 20px;
+    gap: 25px;
 }
 
-/* MOBILE VIEW */
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* MOBILE */
 @media (max-width: 768px) {
+
+    .menu-toggle {
+        display: block;
+    }
 
     .nav-menu {
         display: none;
         flex-direction: column;
         position: absolute;
         top: 80%;
-        right: 20px;
-        background: inherit;
+        right: 0;
+        background: #0b1c2d;
+        width: 200px;
         padding: 15px;
     }
 
     .nav-menu.active {
         display: flex;
     }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .nav-menu a {
-        padding: 8px 0;
-    }
-
-    .mr-logo {
-        height: 45px;
-    }
-
-    .tata-logo {
-        height: 100px !important;
-    }
 }
-
-
-
-
-
-
-
