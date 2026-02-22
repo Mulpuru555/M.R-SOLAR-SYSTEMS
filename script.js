@@ -316,13 +316,16 @@ function prevImage() {
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
 function startAutoSlide() {
+    console.log("Auto slide started");  // 👈 add this
     clearInterval(slideInterval);
 
     slideInterval = setInterval(() => {
+        console.log("Sliding...");      // 👈 add this
         nextImage();
-    }, 3000); // changes every 3 seconds
+    }, 3000);
 }
 
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
+
