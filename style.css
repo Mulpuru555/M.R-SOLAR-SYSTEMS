@@ -432,17 +432,17 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
 }
 
+/* LEFT SIDE */
 .header-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .mr-logo {
-    width: 60px;
+    width: 55px;
 }
 
 .brand-container {
@@ -451,7 +451,7 @@ footer {
 }
 
 .brand-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
 }
 
@@ -462,22 +462,20 @@ footer {
 .brand-subtitle {
     font-size: 12px;
     color: #ff9800;
-    font-weight: 600;
 }
 
+/* RIGHT SIDE */
 .header-right {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 30px;
 }
 
-.tata-logo {
-    height: 45px;
-}
-
+/* NAVIGATION */
 .nav-menu {
     display: flex;
     gap: 20px;
+    white-space: nowrap;
 }
 
 .nav-menu a {
@@ -492,26 +490,31 @@ footer {
     color: #ff9800;
 }
 
-@media(max-width:768px){
+.tata-logo {
+    height: 40px;
+}
+
+@media (max-width: 768px) {
 
     .header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header-left {
+        justify-content: center;
     }
 
     .header-right {
-        width: 100%;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 15px;
         margin-top: 10px;
     }
 
     .nav-menu {
         flex-wrap: wrap;
-        margin-top: 10px;
+        justify-content: center;
     }
 
-    .stats {
-        flex-direction: column;
-        align-items: center;
-    }
 }
