@@ -277,7 +277,7 @@ const residentialImages = [
 const commercialImages = [];  // add later
 
 function openGallery(type) {
-
+    console.log(currentGallery);
     const overlay = document.getElementById("galleryOverlay");
     const image = document.getElementById("galleryImage");
     const comingSoon = document.getElementById("comingSoonText");
@@ -341,5 +341,6 @@ function startAutoSlide() {
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
+
 
 
