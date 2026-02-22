@@ -152,13 +152,15 @@
 
 <section class="dark-section">
     <h2 class="section-title">Our Solar Projects</h2>
-    <div class="product-card">
+
+    <div class="product-card gallery-trigger" onclick="openGallery('residential')">
         <h3>Residential Installations</h3>
-        <p>Project images will be updated soon.</p>
+        <p>Click to view our completed residential solar projects.</p>
     </div>
-    <div class="product-card">
+
+    <div class="product-card gallery-trigger" onclick="openGallery('commercial')">
         <h3>Commercial Installations</h3>
-        <p>Project images will be updated soon.</p>
+        <p>Click to view our completed commercial solar projects.</p>
     </div>
 </section>
 
@@ -244,9 +246,28 @@
     <p>Branches: Tenali | Bapatla | Repalle | Chirala</p>
     <p>© 2026 M.R Solar Systems. All Rights Reserved.</p>
 </footer>
+<!-- PROJECT GALLERY POPUP -->
+<div id="galleryOverlay" class="gallery-overlay">
 
+    <div class="gallery-box">
+        <span class="gallery-close" onclick="closeGallery()">×</span>
+
+        <img id="galleryImage" src="" alt="Solar Project">
+
+        <div id="comingSoonText" class="coming-soon-text" style="display:none;">
+            Commercial project images will be updated soon.
+        </div>
+
+        <div class="gallery-controls">
+            <button onclick="prevImage()">❮</button>
+            <button onclick="nextImage()">❯</button>
+        </div>
+    </div>
+
+</div>
 <script src="script.js"></script>
 
 </body>
 </html>
+
 
