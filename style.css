@@ -439,7 +439,7 @@ footer {
 }
 
 .mr-logo {
-    height: 45px;
+    height: 60px;
 }
 
 .header-right {
@@ -471,7 +471,7 @@ footer {
         display: none;
         flex-direction: column;
         position: absolute;
-        top: 100%;
+        top: 80%;
         right: 20px;
         background: inherit;
         padding: 15px;
@@ -494,9 +494,10 @@ footer {
     }
 
     .tata-logo {
-        height: 80px !important;
+        height: 100px !important;
     }
 }
+
 
 
 
