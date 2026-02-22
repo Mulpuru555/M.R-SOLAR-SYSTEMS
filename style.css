@@ -413,3 +413,12 @@ footer {
     from { transform: scale(0.9); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+/* ===== Warranty Extra Text ===== */
+
+.service-warranty {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ff9800;
+}
