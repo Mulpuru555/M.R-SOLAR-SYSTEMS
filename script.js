@@ -252,6 +252,7 @@ Location: ${location}`;
 
 let currentGallery = [];
 let currentIndex = 0;
+let slideInterval;
 
 const residentialImages = [
         "images/res1.jpeg",
@@ -291,10 +292,12 @@ function openGallery(type) {
 
     currentIndex = 0;
     image.src = currentGallery[currentIndex];
+    startAutoSlide();
 }
 
 function closeGallery() {
     document.getElementById("galleryOverlay").style.display = "none";
+    stopAutoSlide(); // stop when closed
 }
 
 function nextImage() {
@@ -311,4 +314,15 @@ function prevImage() {
         currentIndex = currentGallery.length - 1;
     }
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
+}
+function startAutoSlide() {
+    clearInterval(slideInterval);
+
+    slideInterval = setInterval(() => {
+        nextImage();
+    }, 3000); // changes every 3 seconds
+}
+
+function stopAutoSlide() {
+    clearInterval(slideInterval);
 }
