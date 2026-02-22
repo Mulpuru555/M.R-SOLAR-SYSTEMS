@@ -1,5 +1,3 @@
-// ================= COUNTER ANIMATION =================
-
 function animateCounters() {
     const counters = document.querySelectorAll(".stat-box h2");
 
@@ -11,19 +9,28 @@ function animateCounters() {
         const update = () => {
             if (count < target) {
                 count += speed;
-                counter.innerText = Math.ceil(count) + "+";
+
+                if (counter.closest(".warranty-box")) {
+                    counter.innerText = Math.ceil(count);
+                } else {
+                    counter.innerText = Math.ceil(count) + "+";
+                }
+
                 requestAnimationFrame(update);
             } else {
-                counter.innerText = target + "+";
+
+                if (counter.closest(".warranty-box")) {
+                    counter.innerText = target;
+                } else {
+                    counter.innerText = target + "+";
+                }
+
             }
         };
 
         update();
     });
 }
-
-window.addEventListener("load", animateCounters);
-
 
 // ================= SCROLL FADE =================
 
@@ -240,3 +247,4 @@ Location: ${location}`;
 
     closeLeadPopup();
 }
+
