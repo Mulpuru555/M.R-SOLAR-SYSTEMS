@@ -422,3 +422,78 @@ footer {
     font-weight: 500;
     color: #ff9800;
 }
+
+/* NEW HEADER STRUCTURE */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    position: relative;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mr-logo {
+    height: 45px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.tata-logo {
+    height: 40px;
+}
+
+.menu-toggle {
+    font-size: 28px;
+    cursor: pointer;
+    display: none;
+}
+
+/* NAV MENU */
+.nav-menu {
+    display: flex;
+    gap: 20px;
+}
+
+/* MOBILE VIEW */
+@media (max-width: 768px) {
+
+    .nav-menu {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 20px;
+        background: inherit;
+        padding: 15px;
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-menu a {
+        padding: 8px 0;
+    }
+
+    .mr-logo {
+        height: 35px;
+    }
+
+    .tata-logo {
+        height: 30px;
+    }
+}
