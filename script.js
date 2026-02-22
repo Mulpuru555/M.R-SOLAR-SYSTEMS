@@ -139,3 +139,45 @@ Type: ${type}`;
 
     window.open(url, "_blank");
 }
+// ===== FAQ TOGGLE =====
+document.querySelectorAll(".faq-question").forEach(item => {
+    item.addEventListener("click", () => {
+        const answer = item.nextElementSibling;
+        answer.style.display = answer.style.display === "block" ? "none" : "block";
+    });
+});
+
+// ===== CHAT ASSISTANT =====
+const chatToggle = document.getElementById("solarChatToggle");
+const chatBox = document.getElementById("solarChatBox");
+const chatInput = document.getElementById("solarChatInput");
+const chatMessages = document.getElementById("solarChatMessages");
+
+chatToggle.addEventListener("click", () => {
+    chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
+});
+
+chatInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        let userText = chatInput.value.toLowerCase();
+        let response = "Please contact us at 9154777773 for more details.";
+
+        if (userText.includes("dcr")) {
+            response = "Tata DCR panels are subsidy-approved domestic modules.";
+        } 
+        else if (userText.includes("topcon")) {
+            response = "N-Type TOPCon panels offer higher efficiency and lower degradation.";
+        }
+        else if (userText.includes("subsidy")) {
+            response = "Residential DCR systems are eligible for government subsidy.";
+        }
+        else if (userText.includes("installation")) {
+            response = "Installation usually takes 2–5 days depending on system size.";
+        }
+
+        chatMessages.innerHTML += "<div><strong>You:</strong> " + chatInput.value + "</div>";
+        chatMessages.innerHTML += "<div><strong>Assistant:</strong> " + response + "</div>";
+        chatInput.value = "";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
