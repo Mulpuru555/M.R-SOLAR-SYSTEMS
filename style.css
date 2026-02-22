@@ -423,7 +423,7 @@ footer {
     color: #ff9800;
 }
 
-/* ================= HEADER FIXED ALIGNMENT ================= */
+/* ================= CLEAN INLINE HEADER ================= */
 
 .header {
     background: #0b1c2d;
@@ -435,47 +435,36 @@ footer {
     flex-wrap: wrap;
 }
 
-/* LEFT SIDE (MR + Tata in one row) */
-.header-branding {
+/* LEFT SIDE */
+.header-left {
     display: flex;
     align-items: center;
-    gap: 25px; /* space between MR and Tata */
+    gap: 15px;
 }
 
-/* MR LOGO + TEXT */
-.mr-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
+/* MR LOGO */
 .mr-logo {
     width: 45px;
 }
 
-.brand-container {
-    display: flex;
-    flex-direction: column;
-}
-
+/* BRAND NAME */
 .brand-title {
     font-size: 20px;
     font-weight: 700;
+    margin: 0;
 }
 
 .highlight-solar {
     color: #ff9800;
 }
 
-.brand-subtitle {
-    font-size: 12px;
+/* TATA TEXT */
+.tata-name {
+    font-size: 16px;
+    font-weight: 600;
     color: #ff9800;
-}
-
-/* TATA LOGO */
-.tata-logo {
-    height: 55px;
-    width: auto;
+    padding-left: 15px;
+    border-left: 2px solid #ff9800;
 }
 
 /* NAVIGATION */
@@ -489,15 +478,13 @@ footer {
     color: white;
     text-decoration: none;
     font-weight: 600;
-    transition: 0.3s ease;
 }
 
 .nav-menu a:hover {
     color: #ff9800;
 }
 
-/* ================= MOBILE FIX ================= */
-
+/* MOBILE */
 @media (max-width: 768px) {
 
     .header {
@@ -506,18 +493,23 @@ footer {
         text-align: center;
     }
 
-    .header-branding {
-        flex-direction: column;
-        gap: 12px;
+    .header-left {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .tata-name {
+        border-left: none;
+        padding-left: 0;
     }
 
     .nav-menu {
         margin-top: 12px;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 12px;
     }
 }
+
 
 
 
