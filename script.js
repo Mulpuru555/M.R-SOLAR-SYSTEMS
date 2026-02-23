@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", function() {
+
+// ================= COUNTER =================
+
 function animateCounters() {
     const counters = document.querySelectorAll(".stat-box h2");
 
@@ -31,6 +35,7 @@ function animateCounters() {
         update();
     });
 }
+
 
 // ================= SCROLL FADE =================
 
@@ -150,80 +155,73 @@ Type: ${type}`;
 
 // ================= SAFE FAQ + CHAT =================
 
-document.addEventListener("DOMContentLoaded", function() {
-
-    // FAQ TOGGLE
-    const faqQuestions = document.querySelectorAll(".faq-question");
-    if (faqQuestions.length > 0) {
-        faqQuestions.forEach(item => {
-            item.addEventListener("click", () => {
-                const answer = item.nextElementSibling;
-                if (answer) {
-                    answer.style.display =
-                        answer.style.display === "block" ? "none" : "block";
-                }
-            });
-        });
-    }
-
-    // CHAT ASSISTANT
-    const chatToggle = document.getElementById("solarChatToggle");
-    const chatBox = document.getElementById("solarChatBox");
-    const chatInput = document.getElementById("solarChatInput");
-    const chatMessages = document.getElementById("solarChatMessages");
-
-    if (chatToggle && chatBox && chatInput && chatMessages) {
-
-        chatToggle.addEventListener("click", () => {
-            chatBox.style.display =
-                chatBox.style.display === "flex" ? "none" : "flex";
-        });
-
-        chatInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-
-                let userText = chatInput.value.toLowerCase();
-                let response = "Please contact us at 9154777773 for more details.";
-
-                if (userText.includes("dcr")) {
-                    response = "Tata DCR panels are subsidy-approved domestic modules.";
-                } 
-                else if (userText.includes("topcon")) {
-                    response = "N-Type TOPCon panels offer higher efficiency and lower degradation.";
-                }
-                else if (userText.includes("subsidy")) {
-                    response = "Residential DCR systems are eligible for government subsidy.";
-                }
-                else if (userText.includes("installation")) {
-                    response = "Installation usually takes 2–5 days depending on system size.";
-                }
-
-                chatMessages.innerHTML += "<div><strong>You:</strong> " + chatInput.value + "</div>";
-                chatMessages.innerHTML += "<div><strong>Assistant:</strong> " + response + "</div>";
-                chatInput.value = "";
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+const faqQuestions = document.querySelectorAll(".faq-question");
+if (faqQuestions.length > 0) {
+    faqQuestions.forEach(item => {
+        item.addEventListener("click", () => {
+            const answer = item.nextElementSibling;
+            if (answer) {
+                answer.style.display =
+                    answer.style.display === "block" ? "none" : "block";
             }
         });
-    }
+    });
+}
 
-});
+const chatToggle = document.getElementById("solarChatToggle");
+const chatBox = document.getElementById("solarChatBox");
+const chatInput = document.getElementById("solarChatInput");
+const chatMessages = document.getElementById("solarChatMessages");
+
+if (chatToggle && chatBox && chatInput && chatMessages) {
+
+    chatToggle.addEventListener("click", () => {
+        chatBox.style.display =
+            chatBox.style.display === "flex" ? "none" : "flex";
+    });
+
+    chatInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+
+            let userText = chatInput.value.toLowerCase();
+            let response = "Please contact us at 9154777773 for more details.";
+
+            if (userText.includes("dcr")) {
+                response = "Tata DCR panels are subsidy-approved domestic modules.";
+            } 
+            else if (userText.includes("topcon")) {
+                response = "N-Type TOPCon panels offer higher efficiency and lower degradation.";
+            }
+            else if (userText.includes("subsidy")) {
+                response = "Residential DCR systems are eligible for government subsidy.";
+            }
+            else if (userText.includes("installation")) {
+                response = "Installation usually takes 2–5 days depending on system size.";
+            }
+
+            chatMessages.innerHTML += "<div><strong>You:</strong> " + chatInput.value + "</div>";
+            chatMessages.innerHTML += "<div><strong>Assistant:</strong> " + response + "</div>";
+            chatInput.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    });
+}
+
 
 // ===== SMART LEAD POPUP =====
 
-window.addEventListener("load", function () {
+setTimeout(function () {
 
-    setTimeout(function () {
+    const popup = document.getElementById("leadPopupOverlay");
 
-        const popup = document.getElementById("leadPopupOverlay");
+    if (popup && !sessionStorage.getItem("leadPopupShown")) {
+        popup.style.display = "flex";
+        sessionStorage.setItem("leadPopupShown", "true");
+    }
 
-        if (popup && !sessionStorage.getItem("leadPopupShown")) {
-            popup.style.display = "flex";
-            sessionStorage.setItem("leadPopupShown", "true");
-        }
+}, 10000);
 
-    }, 10000);
 
-});
 // ===== PROJECT GALLERY SYSTEM =====
 
 let currentGallery = [];
@@ -250,10 +248,10 @@ const residentialImages = [
     "images/res24.jpeg",
     "images/res25.jpeg"
 ];
-const commercialImages = [];  // add later
+
+const commercialImages = [];
 
 function openGallery(type) {
-    console.log(currentGallery);
     const overlay = document.getElementById("galleryOverlay");
     const image = document.getElementById("galleryImage");
     const comingSoon = document.getElementById("comingSoonText");
@@ -286,7 +284,7 @@ function openGallery(type) {
 
 function closeGallery() {
     document.getElementById("galleryOverlay").style.display = "none";
-    stopAutoSlide(); // stop when closed
+    stopAutoSlide();
 }
 
 function nextImage() {
@@ -304,12 +302,10 @@ function prevImage() {
     }
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
-function startAutoSlide() {
-    console.log("Auto slide started");  // 👈 add this
-    clearInterval(slideInterval);
 
+function startAutoSlide() {
+    clearInterval(slideInterval);
     slideInterval = setInterval(() => {
-        console.log("Sliding...");      // 👈 add this
         nextImage();
     }, 3000);
 }
@@ -318,7 +314,4 @@ function stopAutoSlide() {
     clearInterval(slideInterval);
 }
 
-
-
-
-
+});
