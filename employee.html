@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Employee Dashboard</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 .header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;}
@@ -14,6 +16,9 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 .attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
 .attendance-btn:disabled{background:gray;cursor:not-allowed;}
 .status-message{margin-top:15px;}
+.distance-box{margin-top:15px;font-weight:bold;}
+.green{color:#00e676;}
+.red{color:#ff5252;}
 </style>
 </head>
 
@@ -26,9 +31,17 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 
 <div class="dashboard-container">
 <h1>Attendance</h1>
+
 <div class="attendance-box">
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">Mark Attendance</button>
+
+<div id="distanceDisplay" class="distance-box">Checking location...</div>
+
+<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
+Mark Attendance
+</button>
+
 <div id="attendanceStatus" class="status-message"></div>
+
 </div>
 </div>
 
@@ -44,13 +57,14 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const btn=document.getElementById("attendanceBtn");
-const status=document.getElementById("attendanceStatus");
-
-/* ===== OFFICE GPS LOCATION ===== */
+/* ===== OFFICE LOCATION ===== */
 const officeLat = 16.236719;
 const officeLon = 80.647476;
-const allowedRadius = 100; // meters
+const allowedRadius = 100;
+
+const btn = document.getElementById("attendanceBtn");
+const status = document.getElementById("attendanceStatus");
+const distanceDisplay = document.getElementById("distanceDisplay");
 
 /* ===== GET CLOSING TIME ===== */
 async function getCloseHour(){
@@ -58,7 +72,7 @@ async function getCloseHour(){
   return snap.exists()?snap.data().closeHour:11;
 }
 
-/* ===== DISTANCE CALCULATION (Haversine Formula) ===== */
+/* ===== DISTANCE FUNCTION ===== */
 function getDistance(lat1, lon1, lat2, lon2){
   const R = 6371000;
   const dLat = (lat2-lat1)*Math.PI/180;
@@ -71,6 +85,33 @@ function getDistance(lat1, lon1, lat2, lon2){
   return R*c;
 }
 
+/* ===== CHECK LOCATION LIVE ===== */
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(position=>{
+    const userLat = position.coords.latitude;
+    const userLon = position.coords.longitude;
+
+    const distance = Math.round(
+      getDistance(userLat,userLon,officeLat,officeLon)
+    );
+
+    if(distance <= allowedRadius){
+      distanceDisplay.innerHTML =
+      `📍 Your distance from office: <span class="green">${distance} meters</span>`;
+    }else{
+      distanceDisplay.innerHTML =
+      `📍 Your distance from office: <span class="red">${distance} meters</span>`;
+    }
+
+  }, ()=>{
+    distanceDisplay.innerHTML =
+    `<span class="red">Location permission denied.</span>`;
+  });
+}else{
+  distanceDisplay.innerHTML =
+  `<span class="red">Location not supported.</span>`;
+}
+
 /* ===== MARK ATTENDANCE ===== */
 window.markAttendance = async function(){
 
@@ -80,16 +121,10 @@ window.markAttendance = async function(){
     return;
   }
 
-  if(!navigator.geolocation){
-    status.innerText="❌ Location not supported.";
-    return;
-  }
-
   navigator.geolocation.getCurrentPosition(async position => {
 
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
-
     const distance = getDistance(userLat,userLon,officeLat,officeLon);
 
     if(distance > allowedRadius){
@@ -125,7 +160,7 @@ window.markAttendance = async function(){
       btn.disabled=true;
     });
 
-  }, error => {
+  }, ()=>{
     status.innerText="❌ Location permission denied.";
   });
 };
