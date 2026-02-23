@@ -57,7 +57,8 @@ sections.forEach(section => {
 
 let emiChart;
 
-function calculateEMI() {
+window.calculateEMI = function() {
+
     let P = parseFloat(document.getElementById("loanAmount").value);
     let annualRate = parseFloat(document.getElementById("interestRate").value);
     let years = parseFloat(document.getElementById("loanTenure").value);
@@ -91,12 +92,13 @@ function calculateEMI() {
             }]
         }
     });
-}
+};
 
 
 // ================= PAYBACK =================
 
-function calculatePayback() {
+window.calculatePayback = function() {
+
     let cost = parseFloat(document.getElementById("systemCost").value);
     let before = parseFloat(document.getElementById("beforeBill").value);
     let after = parseFloat(document.getElementById("afterBill").value);
@@ -120,12 +122,13 @@ function calculatePayback() {
     document.getElementById("paybackResult").innerText =
         "Annual Savings: ₹" + annualSavings.toFixed(0) +
         " | Payback Period: " + payback + " Years";
-}
+};
 
 
 // ================= WHATSAPP =================
 
-function sendWhatsApp() {
+window.sendWhatsApp = function() {
+
     let name = document.getElementById("name").value;
     let mobile = document.getElementById("mobile").value;
     let location = document.getElementById("locationInput").value;
@@ -143,21 +146,15 @@ Location: ${location}%0A
 Type: ${type}`;
 
     let url = `https://wa.me/919154777773?text=${message}`;
+
     window.open(url, "_blank");
-}
+};
 
 
 // ================= SMART LEAD POPUP =================
 
-function closeLeadPopup() {
-    const popup = document.getElementById("leadPopupOverlay");
-    if (popup) {
-        popup.style.display = "none";
-    }
-}
-
-// Auto open after 10 sec
 setTimeout(function () {
+
     const popup = document.getElementById("leadPopupOverlay");
 
     if (popup && !sessionStorage.getItem("leadPopupShown")) {
@@ -167,23 +164,8 @@ setTimeout(function () {
 
 }, 10000);
 
-// Close when clicking outside
-window.addEventListener("click", function(e){
-    const popup = document.getElementById("leadPopupOverlay");
-    if(e.target === popup){
-        popup.style.display = "none";
-    }
-});
 
-// Close when pressing ESC
-document.addEventListener("keydown", function(e){
-    if(e.key === "Escape"){
-        closeLeadPopup();
-    }
-});
-
-
-// ================= PROJECT GALLERY =================
+// ================= PROJECT GALLERY SYSTEM =================
 
 let currentGallery = [];
 let currentIndex = 0;
@@ -212,7 +194,7 @@ const residentialImages = [
 
 const commercialImages = [];
 
-function openGallery(type) {
+window.openGallery = function(type) {
     const overlay = document.getElementById("galleryOverlay");
     const image = document.getElementById("galleryImage");
     const comingSoon = document.getElementById("comingSoonText");
@@ -237,30 +219,42 @@ function openGallery(type) {
     currentIndex = 0;
     image.src = currentGallery[currentIndex];
     startAutoSlide();
-}
+};
 
-function closeGallery() {
+window.closeGallery = function() {
     document.getElementById("galleryOverlay").style.display = "none";
     stopAutoSlide();
-}
+};
 
-function nextImage() {
+window.nextImage = function() {
     currentIndex = (currentIndex + 1) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
-}
+};
 
-function prevImage() {
+window.prevImage = function() {
     currentIndex = (currentIndex - 1 + currentGallery.length) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
-}
+};
 
 function startAutoSlide() {
     clearInterval(slideInterval);
-    slideInterval = setInterval(nextImage, 3000);
+    slideInterval = setInterval(() => {
+        nextImage();
+    }, 3000);
 }
 
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
 
-});
+}); // END DOMContentLoaded
+
+
+
+// ===== GLOBAL CLOSE FUNCTION (IMPORTANT FIX) =====
+function closeLeadPopup() {
+    const popup = document.getElementById("leadPopupOverlay");
+    if (popup) {
+        popup.style.display = "none";
+    }
+}
