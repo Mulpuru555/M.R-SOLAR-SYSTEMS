@@ -207,47 +207,23 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 });
+
 // ===== SMART LEAD POPUP =====
 
-document.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("load", function () {
 
-    // Show popup after 10 seconds
     setTimeout(function () {
-        if (!sessionStorage.getItem("leadPopupShown")) {
-            document.getElementById("leadPopupOverlay").style.display = "flex";
+
+        const popup = document.getElementById("leadPopupOverlay");
+
+        if (popup && !sessionStorage.getItem("leadPopupShown")) {
+            popup.style.display = "flex";
             sessionStorage.setItem("leadPopupShown", "true");
         }
+
     }, 10000);
 
 });
-
-function closeLeadPopup() {
-    document.getElementById("leadPopupOverlay").style.display = "none";
-}
-
-function sendLeadToWhatsApp() {
-
-    let name = document.getElementById("leadName").value;
-    let mobile = document.getElementById("leadMobile").value;
-    let location = document.getElementById("leadLocation").value;
-
-    if (!name || !mobile || !location) {
-        alert("Please fill all fields.");
-        return;
-    }
-
-    let message = `New Lead:%0A
-Name: ${name}%0A
-Mobile: ${mobile}%0A
-Location: ${location}`;
-
-    let url = `https://wa.me/919154777773?text=${message}`;
-
-    window.open(url, "_blank");
-
-    closeLeadPopup();
-}
-
 // ===== PROJECT GALLERY SYSTEM =====
 
 let currentGallery = [];
@@ -341,6 +317,7 @@ function startAutoSlide() {
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
+
 
 
 
