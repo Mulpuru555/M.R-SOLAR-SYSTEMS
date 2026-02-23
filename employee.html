@@ -1,1 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Dashboard | M.R Solar Systems</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: #111;
+  color: white;
+}
+
+.header {
+  background: #000;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  color: #ff8c00;
+  margin: 0;
+}
+
+.logout-btn {
+  background: #ff8c00;
+  border: none;
+  padding: 8px 15px;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.dashboard-container {
+  padding: 40px;
+  text-align: center;
+}
+
+.attendance-box {
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 10px;
+  margin-top: 30px;
+  box-shadow: 0 0 20px rgba(255,140,0,0.3);
+}
+
+.attendance-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: linear-gradient(45deg,#ff8c00,#ff5e00);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.attendance-btn:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+.status-message {
+  margin-top: 20px;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>M.R Solar Employee Portal</h2>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<div class="dashboard-container">
+  <h1>Welcome, Employee</h1>
+  <p>Mark your daily attendance below (Before 11:00 AM).</p>
+
+  <div class="attendance-box">
+    <h3>Today's Attendance</h3>
+    <button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
+      Mark Attendance
+    </button>
+    <div id="attendanceStatus" class="status-message"></div>
+  </div>
+</div>
+
+<!-- Session Protection -->
+<script type="module">
+import { checkSession } from "./auth.js";
+checkSession("employee");
+</script>
+
+<script type="module">
+import { auth, db } from "./firebase-config.js";
+import { 
+  addDoc, 
+  collection, 
+  serverTimestamp, 
+  query, 
+  where, 
+  getDocs 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const attendanceBtn = document.getElementById("attendanceBtn");
+const statusDiv = document.getElementById("attendanceStatus");
+
+// 11 AM UI Restriction
+const now = new Date();
+const hour = now.getHours();
+
+if (hour >= 11) {
+  attendanceBtn.disabled = true;
+  attendanceBtn.innerText = "Attendance Closed (After 11 AM)";
+}
+
+// Attendance Logic
+window.markAttendance = async function() {
+
+  const currentHour = new Date().getHours();
+
+  if (currentHour >= 11) {
+    statusDiv.innerText = "❌ Attendance closed after 11 AM.";
+    return;
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Prevent double attendance
+    const q = query(
+      collection(db, "attendance"),
+      where("employeeId", "==", user.uid),
+      where("date", "==", today)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      statusDiv.innerText = "⚠ Attendance already marked today.";
+      attendanceBtn.disabled = true;
+      return;
+    }
+
+    await addDoc(collection(db, "attendance"), {
+      employeeId: user.uid,
+      date: today,
+      timestamp: serverTimestamp()
+    });
+
+    statusDiv.innerText = "✅ Attendance marked successfully!";
+    attendanceBtn.disabled = true;
+  });
+};
+</script>
+
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>
