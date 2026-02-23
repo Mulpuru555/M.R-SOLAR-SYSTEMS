@@ -35,7 +35,9 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 <div class="attendance-box">
 
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
-
+<div id="countdownBox" style="margin-bottom:15px;font-weight:600;">
+🕒 Loading countdown...
+</div>
 <button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
 Mark Attendance
 </button>
@@ -71,7 +73,44 @@ async function getCloseHour(){
   const snap=await getDoc(doc(db,"settings","attendance"));
   return snap.exists()?snap.data().closeHour:11;
 }
+/* ===== COUNTDOWN TIMER ===== */
+async function startCountdown(){
 
+  const closeHour = await getCloseHour();
+
+  const countdownBox = document.getElementById("countdownBox");
+
+  function updateTimer(){
+
+    const now = new Date();
+    const closingTime = new Date();
+
+    closingTime.setHours(closeHour,0,0,0);
+
+    const diff = closingTime - now;
+
+    if(diff <= 0){
+      countdownBox.innerHTML = "❌ Attendance Closed";
+      btn.disabled = true;
+      return;
+    }
+
+    const hours = Math.floor(diff / (1000*60*60));
+    const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
+    const seconds = Math.floor((diff % (1000*60)) / 1000);
+
+    countdownBox.innerHTML =
+    `🕒 Attendance closes in: 
+    <span style="color:#ff8c00;">
+    ${hours}h : ${minutes}m : ${seconds}s
+    </span>`;
+  }
+
+  updateTimer();
+  setInterval(updateTimer,1000);
+}
+
+startCountdown();
 /* ===== DISTANCE FUNCTION ===== */
 function getDistance(lat1, lon1, lat2, lon2){
   const R = 6371000;
