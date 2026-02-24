@@ -19,6 +19,9 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 .distance-box{margin-top:15px;font-weight:bold;}
 .green{color:#00e676;}
 .red{color:#ff5252;}
+.payment-box{background:#1a1a1a;padding:30px;border-radius:10px;margin-top:40px;}
+.payment-box input{padding:10px;width:250px;border-radius:5px;border:none;margin-bottom:10px;}
+.payment-btn{margin-top:10px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
 </style>
 </head>
 
@@ -47,6 +50,22 @@ Mark Attendance
 <div id="attendanceStatus" class="status-message"></div>
 
 </div>
+
+<!-- ================= PAYMENT SECTION ADDED ================= -->
+
+<div class="payment-box">
+<h1>Add Customer Payment</h1>
+
+<form id="paymentForm">
+<input type="text" id="customerName" placeholder="Customer Name" required><br>
+<input type="text" id="executiveName" placeholder="Executive Name" required><br>
+<input type="number" id="sanctionedAmount" placeholder="Sanctioned Amount" required><br>
+<button type="submit" class="payment-btn">Submit</button>
+</form>
+
+<div id="paymentMessage" class="status-message"></div>
+</div>
+
 </div>
 
 <!-- Protect Page -->
@@ -71,28 +90,24 @@ const btn = document.getElementById("attendanceBtn");
 const status = document.getElementById("attendanceStatus");
 const distanceDisplay = document.getElementById("distanceDisplay");
 
-/* ===== GET CLOSING TIME (Hour + Minute) ===== */
+/* ===== GET CLOSING TIME ===== */
 async function getClosingTime(){
   const snap = await getDoc(doc(db,"settings","attendance"));
-
   if(snap.exists()){
     return {
       hour: snap.data().closeHour ?? 11,
       minute: snap.data().closeMinute ?? 0
     };
   }
-
   return { hour:11, minute:0 };
 }
 
 /* ===== COUNTDOWN TIMER ===== */
 async function startCountdown(){
-
   const { hour, minute } = await getClosingTime();
   const countdownBox = document.getElementById("countdownBox");
 
   function updateTimer(){
-
     const now = new Date();
     const closingTime = new Date();
     closingTime.setHours(hour, minute, 0, 0);
@@ -135,15 +150,12 @@ function getDistance(lat1, lon1, lat2, lon2){
   return R*c;
 }
 
-/* ===== CHECK LOCATION ===== */
+/* ===== LOCATION CHECK ===== */
 if(navigator.geolocation){
   navigator.geolocation.getCurrentPosition(position=>{
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
-
-    const distance = Math.round(
-      getDistance(userLat,userLon,officeLat,officeLon)
-    );
+    const distance = Math.round(getDistance(userLat,userLon,officeLat,officeLon));
 
     if(distance <= allowedRadius){
       distanceDisplay.innerHTML =
@@ -152,21 +164,12 @@ if(navigator.geolocation){
       distanceDisplay.innerHTML =
       `📍 Your distance from office: <span class="red">${distance} meters</span>`;
     }
-
-  }, ()=>{
-    distanceDisplay.innerHTML =
-    `<span class="red">Location permission denied.</span>`;
   });
-}else{
-  distanceDisplay.innerHTML =
-  `<span class="red">Location not supported.</span>`;
 }
 
 /* ===== MARK ATTENDANCE ===== */
 window.markAttendance = async function(){
-
   const { hour, minute } = await getClosingTime();
-
   const now = new Date();
   const closingTime = new Date();
   closingTime.setHours(hour, minute, 0, 0);
@@ -178,7 +181,6 @@ window.markAttendance = async function(){
   }
 
   navigator.geolocation.getCurrentPosition(async position => {
-
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
     const distance = getDistance(userLat,userLon,officeLat,officeLon);
@@ -216,10 +218,38 @@ window.markAttendance = async function(){
       btn.disabled=true;
     });
 
-  }, ()=>{
-    status.innerText="❌ Location permission denied.";
   });
 };
+
+/* ===== PAYMENT FORM LOGIC ADDED ===== */
+document.addEventListener("DOMContentLoaded", function () {
+
+  const paymentForm = document.getElementById("paymentForm");
+  const paymentMessage = document.getElementById("paymentMessage");
+
+  paymentForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    try{
+      await addDoc(collection(db,"customerPayments"),{
+        customerName: document.getElementById("customerName").value,
+        executiveName: document.getElementById("executiveName").value,
+        sanctionedAmount: Number(document.getElementById("sanctionedAmount").value),
+        paidAmount: 0,
+        createdBy: auth.currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+
+      paymentMessage.innerText="✅ Customer Added Successfully.";
+      paymentForm.reset();
+
+    }catch(error){
+      paymentMessage.innerText="❌ "+error.message;
+    }
+
+  });
+
+});
 </script>
 
 <script type="module" src="auth.js"></script>
