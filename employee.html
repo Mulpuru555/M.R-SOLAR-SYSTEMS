@@ -51,7 +51,7 @@ Mark Attendance
 
 </div>
 
-<!-- ================= PAYMENT SECTION ADDED ================= -->
+<!-- ================= PAYMENT SECTION ================= -->
 
 <div class="payment-box">
 <h1>Add Customer Payment</h1>
@@ -221,12 +221,12 @@ window.markAttendance = async function(){
   });
 };
 
-/* ===== PAYMENT FORM LOGIC ADDED ===== */
-document.addEventListener("DOMContentLoaded", function () {
+/* ===== PAYMENT FORM LOGIC ===== */
 
-  const paymentForm = document.getElementById("paymentForm");
-  const paymentMessage = document.getElementById("paymentMessage");
+const paymentForm = document.getElementById("paymentForm");
+const paymentMessage = document.getElementById("paymentMessage");
 
+if (paymentForm) {
   paymentForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -246,10 +246,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }catch(error){
       paymentMessage.innerText="❌ "+error.message;
     }
-
   });
+}
 
-});
 </script>
 
 <script type="module" src="auth.js"></script>
