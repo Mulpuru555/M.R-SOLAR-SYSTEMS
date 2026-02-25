@@ -17,6 +17,8 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 .attendance-btn:disabled{background:gray;cursor:not-allowed;}
 .status-message{margin-top:15px;}
 .distance-box{margin-top:15px;font-weight:bold;}
+.green{color:#00e676;}
+.red{color:#ff5252;}
 .payment-box{background:#1a1a1a;padding:30px;border-radius:10px;margin-top:40px;}
 .payment-box input{padding:10px;width:250px;border-radius:5px;border:none;margin-bottom:10px;}
 .payment-btn{margin-top:10px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
@@ -33,16 +35,19 @@ th,td{padding:8px;}
 </div>
 
 <div class="dashboard-container">
+
 <h1>Attendance</h1>
 
 <div class="attendance-box">
-<div id="distanceDisplay">Checking location...</div>
-<div id="countdownBox">Loading countdown...</div>
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">Mark Attendance</button>
-<div id="attendanceStatus"></div>
+<div id="distanceDisplay" class="distance-box">Checking location...</div>
+<div id="countdownBox" style="margin-bottom:15px;font-weight:600;">Loading countdown...</div>
+<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>
+Mark Attendance
+</button>
+<div id="attendanceStatus" class="status-message"></div>
 </div>
 
-<!-- ERP SECTION (UNCHANGED) -->
+<!-- ERP SECTION -->
 <div class="payment-box">
 <h1>Add Customer (ERP)</h1>
 
@@ -53,36 +58,75 @@ th,td{padding:8px;}
 <button type="submit" class="payment-btn">Submit</button>
 </form>
 
-<div id="paymentMessage"></div>
+<div id="paymentMessage" class="status-message"></div>
 </div>
+
+<hr style="margin:40px 0;">
+
+<h1>My Registrations</h1>
+
+<table style="width:100%; margin-top:20px; border-collapse:collapse;" border="1">
+<thead>
+<tr>
+<th>Customer</th>
+<th>Executive</th>
+<th>Total</th>
+<th>Paid</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="recordsTable"></tbody>
+</table>
 
 </div>
 
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { addDoc, collection, serverTimestamp, doc, getDoc } 
+import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ===== OFFICE LOCATION ===== */
+/* ==============================
+   OFFICE LOCATION SETTINGS
+============================== */
 const officeLat = 16.236719;
 const officeLon = 80.647476;
 const allowedRadius = 200;
 
-/* ===== GET CLOSING TIME ===== */
+const btn = document.getElementById("attendanceBtn");
+const statusBox = document.getElementById("attendanceStatus");
+const distanceDisplay = document.getElementById("distanceDisplay");
+
+/* ==============================
+   AUTH INIT
+============================== */
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    startCountdown();
+    startLocationTracking();
+    loadRecords();
+  }
+});
+
+/* ==============================
+   GET CLOSING TIME
+============================== */
 async function getClosingTime(){
   const snap = await getDoc(doc(db,"settings","attendance"));
   if(snap.exists()){
     return {
-      hour: snap.data().closeHour ?? 11,
+      hour: snap.data().closeHour ?? 10,
       minute: snap.data().closeMinute ?? 0
     };
   }
-  return { hour:11, minute:0 };
+  return { hour:10, minute:0 };
 }
 
-/* ===== COUNTDOWN ===== */
+/* ==============================
+   COUNTDOWN
+============================== */
 async function startCountdown(){
   const { hour, minute } = await getClosingTime();
   const box = document.getElementById("countdownBox");
@@ -91,12 +135,11 @@ async function startCountdown(){
     const now = new Date();
     const close = new Date();
     close.setHours(hour, minute, 0, 0);
-
     const diff = close - now;
 
     if(diff <= 0){
-      box.innerText = "❌ Attendance Closed";
-      document.getElementById("attendanceBtn").disabled = true;
+      box.innerText = "Attendance Closed";
+      btn.disabled = true;
       return;
     }
 
@@ -111,73 +154,138 @@ async function startCountdown(){
   setInterval(update,1000);
 }
 
-window.markAttendance = async function(){
+/* ==============================
+   LOCATION TRACKING
+============================== */
+function startLocationTracking(){
 
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported by browser.");
+  if(!navigator.geolocation){
+    distanceDisplay.innerText = "Geolocation not supported";
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
+  navigator.geolocation.watchPosition(
 
+    (pos)=>{
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
 
-      const distance = getDistance(lat,lon,officeLat,officeLon);
+      const distance = calculateDistance(lat, lon, officeLat, officeLon);
 
-      document.getElementById("distanceDisplay").innerText =
-        `Distance: ${Math.round(distance)} meters`;
+      distanceDisplay.innerText = `Distance from office: ${Math.round(distance)} meters`;
 
-      if(distance > allowedRadius){
-        document.getElementById("attendanceStatus").innerText =
-          "❌ You are outside office location.";
-        return;
+      if(distance <= allowedRadius){
+        btn.disabled = false;
+        statusBox.innerText = "";
+      }else{
+        btn.disabled = true;
+        statusBox.innerText = "You are outside office location";
       }
-
-      const user = auth.currentUser;
-      const today = new Date().toISOString().split("T")[0];
-
-      await addDoc(collection(db,"attendance"),{
-        employeeId:user.uid,
-        date:today,
-        timestamp:serverTimestamp()
-      });
-
-      document.getElementById("attendanceStatus").innerText =
-        "✅ Attendance Marked";
-      document.getElementById("attendanceBtn").disabled=true;
     },
 
-    (error) => {
+    (error)=>{
       console.log(error);
-      document.getElementById("attendanceStatus").innerText =
-        "❌ Location permission denied or unavailable.";
-    }
+      distanceDisplay.innerText = "Location permission denied";
+      btn.disabled = true;
+    },
+
+    { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
+
   );
+}
+
+/* ==============================
+   MARK ATTENDANCE
+============================== */
+window.markAttendance = async function(){
+  const user = auth.currentUser;
+  const today = new Date().toISOString().split("T")[0];
+
+  await addDoc(collection(db,"attendance"),{
+    employeeId:user.uid,
+    date:today,
+    timestamp:serverTimestamp()
+  });
+
+  statusBox.innerText = "Attendance Marked Successfully";
+  btn.disabled = true;
 };
-/* ===== DISTANCE CALCULATION ===== */
-function getDistance(lat1, lon1, lat2, lon2){
+
+/* ==============================
+   DISTANCE FORMULA
+============================== */
+function calculateDistance(lat1, lon1, lat2, lon2){
   const R = 6371e3;
-  const φ1 = lat1 * Math.PI/180;
-  const φ2 = lat2 * Math.PI/180;
-  const Δφ = (lat2-lat1) * Math.PI/180;
-  const Δλ = (lon2-lon1) * Math.PI/180;
+  const φ1 = lat1*Math.PI/180;
+  const φ2 = lat2*Math.PI/180;
+  const Δφ = (lat2-lat1)*Math.PI/180;
+  const Δλ = (lon2-lon1)*Math.PI/180;
 
   const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) +
             Math.cos(φ1)*Math.cos(φ2) *
             Math.sin(Δλ/2)*Math.sin(Δλ/2);
-  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
+  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R*c;
 }
 
-/* START AFTER LOGIN */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    startCountdown();
-  }
+/* ==============================
+   ERP CUSTOMER SECTION
+============================== */
+const paymentForm = document.getElementById("paymentForm");
+const paymentMessage = document.getElementById("paymentMessage");
+
+paymentForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  await addDoc(collection(db,"customerPayments"),{
+    customerName: document.getElementById("customerName").value,
+    executiveName: document.getElementById("executiveName").value,
+    totalAmount: Number(document.getElementById("totalAmount").value),
+    status: "Pending",
+    isLocked: true,
+    payments: [],
+    createdBy: auth.currentUser.uid,
+    createdAt: serverTimestamp()
+  });
+
+  paymentMessage.innerText="Customer Added Successfully";
+  paymentForm.reset();
+  loadRecords();
 });
+
+/* ==============================
+   LOAD RECORDS
+============================== */
+async function loadRecords(){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  const q = query(collection(db,"customerPayments"),
+    where("createdBy","==",user.uid)
+  );
+
+  const snapshot = await getDocs(q);
+  const table = document.getElementById("recordsTable");
+  table.innerHTML="";
+
+  snapshot.forEach(docSnap=>{
+    const data = docSnap.data();
+    const payments = data.payments || [];
+    const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
+
+    table.innerHTML+=`
+    <tr>
+      <td>${data.customerName}</td>
+      <td>${data.executiveName}</td>
+      <td>₹${data.totalAmount}</td>
+      <td>₹${totalPaid}</td>
+      <td>${data.status}</td>
+      <td>${data.isLocked ? "Locked" : "Editable"}</td>
+    </tr>`;
+  });
+}
+
 </script>
 
 </body>
