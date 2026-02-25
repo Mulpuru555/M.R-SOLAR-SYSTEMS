@@ -33,7 +33,6 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 .unlock-btn{background:#00cec9;}
 .pay-btn{background:#0984e3;}
 .serial{color:#ff8c00;font-weight:600;}
-.performance-card{background:#151515;padding:15px;border-radius:10px;margin-bottom:10px;}
 </style>
 </head>
 
@@ -56,12 +55,6 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
     <h4>Total Pending</h4>
     <h2 id="totalPending">₹ 0</h2>
   </div>
-</div>
-
-<!-- EXECUTIVE PERFORMANCE -->
-<div class="section-box">
-<h3>Executive Performance Summary</h3>
-<div id="executivePerformance"></div>
 </div>
 
 <!-- ATTENDANCE SETTINGS -->
@@ -122,7 +115,6 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const table = document.getElementById("customerTable");
 const searchInput = document.getElementById("searchInput");
 const pendingCheckbox = document.getElementById("pendingOnly");
-const performanceDiv = document.getElementById("executivePerformance");
 
 let allDocs = [];
 
@@ -138,13 +130,11 @@ function renderDashboard(){
 
 let totalRevenue = 0;
 let totalPending = 0;
-let execMap = {};
 
 const searchText = searchInput.value.toLowerCase();
 const pendingOnly = pendingCheckbox.checked;
 
 table.innerHTML = "";
-performanceDiv.innerHTML = "";
 
 const sortedDocs = [...allDocs].sort((a,b)=>{
 const A = a.createdAt?.seconds || 0;
@@ -175,18 +165,6 @@ if(pendingOnly && balance===0) return;
 totalRevenue += totalPaid;
 totalPending += balance;
 
-/* EXECUTIVE PERFORMANCE */
-if(!execMap[data.executiveName]){
-execMap[data.executiveName] = {
-customers:0,
-revenue:0,
-pending:0
-};
-}
-execMap[data.executiveName].customers++;
-execMap[data.executiveName].revenue += totalPaid;
-execMap[data.executiveName].pending += balance;
-
 /* TABLE */
 table.innerHTML += `
 <tr>
@@ -211,22 +189,6 @@ ${data.isLocked?'Unlock':'Lock'}
 </button>
 </td>
 </tr>`;
-});
-
-/* PERFORMANCE DISPLAY */
-Object.keys(execMap).forEach(name=>{
-const data = execMap[name];
-const total = data.revenue + data.pending;
-const percent = total>0 ? ((data.revenue/total)*100).toFixed(1) : 0;
-
-performanceDiv.innerHTML += `
-<div class="performance-card">
-<strong>${name}</strong><br>
-Customers: ${data.customers} |
-Revenue: ₹${data.revenue.toLocaleString()} |
-Pending: ₹${data.pending.toLocaleString()} |
-Collection: ${percent}%
-</div>`;
 });
 
 document.getElementById("totalRevenue").innerText =
