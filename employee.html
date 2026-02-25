@@ -292,7 +292,7 @@ async function loadRecords(){
 ============================== */
 window.logoutUser = async function(){
   await auth.signOut();
-  window.location.href = "./index.html";
+  window.location.href = window.location.origin + window.location.pathname.replace("employee.html","");
 };
 </script>
 
