@@ -150,33 +150,76 @@ isLocked:!currentState
 });
 };
 
-/* ================= MONTHLY ATTENDANCE ================= */
+window.generateMonthlyReport = async function(){
 
-window.generateMonthlyReport=async function(){
-const month=document.getElementById("monthPicker").value;
+const month = document.getElementById("monthPicker").value;
 if(!month){ alert("Select month"); return; }
 
-const [year,mon]=month.split("-");
-const usersSnapshot=await getDocs(collection(db,"users"));
-const attendanceSnapshot=await getDocs(collection(db,"attendance"));
+const [year, mon] = month.split("-");
+const selectedYear = Number(year);
+const selectedMonth = Number(mon);
 
-let html="";
+const usersSnapshot = await getDocs(collection(db,"users"));
+const attendanceSnapshot = await getDocs(collection(db,"attendance"));
+
+let html = "";
 
 usersSnapshot.forEach(userDoc=>{
-const user=userDoc.data();
-if(user.role==="employee"){
-let present=0;
+const user = userDoc.data();
+
+if(user.role === "employee"){
+
+let present = 0;
+
+// Calculate total working days in month (excluding Sundays)
+let workingDays = 0;
+let date = new Date(selectedYear, selectedMonth-1, 1);
+
+while(date.getMonth() === selectedMonth-1){
+if(date.getDay() !== 0){ // Not Sunday
+workingDays++;
+}
+date.setDate(date.getDate()+1);
+}
+
+// Count Present
 attendanceSnapshot.forEach(attDoc=>{
-const att=attDoc.data();
-if(att.employeeId===userDoc.id && att.date.startsWith(`${year}-${mon}`)){
+const att = attDoc.data();
+if(att.employeeId === userDoc.id && att.date){
+
+const dateObj = new Date(att.date);
+const attYear = dateObj.getFullYear();
+const attMonth = dateObj.getMonth() + 1;
+
+if(attYear === selectedYear && attMonth === selectedMonth){
 present++;
 }
-});
-html+=`<div><strong>${user.name}</strong> — Present Days: ${present}</div>`;
+
 }
 });
 
-document.getElementById("monthlyReport").innerHTML=html||"No records.";
+const absent = workingDays - present;
+const percentage = workingDays > 0 
+? ((present / workingDays) * 100).toFixed(2)
+: 0;
+
+html += `
+<div style="margin-bottom:10px;padding:8px;background:#222;border-radius:6px;">
+<strong>${user.name}</strong><br>
+Present: ${present} <br>
+Absent: ${absent} <br>
+Working Days: ${workingDays} <br>
+Attendance: <span style="color:${percentage>=75?'#00e676':'#ff5252'}">
+${percentage}%
+</span>
+</div>
+`;
+
+}
+});
+
+document.getElementById("monthlyReport").innerHTML = html || "No records.";
+
 };
 
 /* ================= ATTENDANCE SETTINGS ================= */
