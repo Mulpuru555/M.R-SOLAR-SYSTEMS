@@ -66,6 +66,7 @@ th,td{padding:8px;border:1px solid #333;text-align:center;}
 <th>Paid</th>
 <th>Balance</th>
 <th>Status</th>
+<th>Work Status</th>
 <th>Payment</th>
 <th>Lock</th>
 </tr>
@@ -102,6 +103,8 @@ const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
 const balance=data.totalAmount-totalPaid;
 const status=balance===0?"Completed":"Pending";
 
+const workStatus = data.workStatus || "Not Completed";
+
 table.innerHTML+=`
 <tr>
 <td>${data.customerName}</td>
@@ -110,13 +113,23 @@ table.innerHTML+=`
 <td>₹${totalPaid}</td>
 <td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
 <td>${status}</td>
+
+<td>
+<select onchange="updateWorkStatus('${docSnap.id}', this.value)">
+<option value="Not Completed" ${workStatus==="Not Completed"?"selected":""}>Not Completed</option>
+<option value="Completed" ${workStatus==="Completed"?"selected":""}>Completed</option>
+</select>
+</td>
+
 <td><button class="pay-btn" onclick="addPayment('${docSnap.id}')">Add</button></td>
+
 <td>
 <button class="${data.isLocked?'unlock-btn':'lock-btn'}"
 onclick="toggleLock('${docSnap.id}',${data.isLocked})">
 ${data.isLocked?'Unlock':'Lock'}
 </button>
 </td>
+
 </tr>`;
 });
 
@@ -150,6 +163,12 @@ isLocked:!currentState
 });
 };
 
+window.updateWorkStatus = async function(id, value){
+await updateDoc(doc(db,"customerPayments",id),{
+workStatus:value
+});
+};
+  
 window.generateMonthlyReport = async function(){
 
 const month = document.getElementById("monthPicker").value;
