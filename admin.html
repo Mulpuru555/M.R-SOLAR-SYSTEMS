@@ -7,124 +7,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{
-margin:0;
-font-family:'Montserrat',sans-serif;
-background:#111;
-color:white;
-}
+body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
+.header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;}
+.header h2{color:#ff8c00;margin:0;}
+.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;}
+.container{padding:40px;}
 
-.header{
-background:#000;
-padding:15px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.5);
-}
+.summary-container{display:flex;gap:20px;margin-bottom:30px;}
+.summary-card{flex:1;padding:25px;border-radius:15px;text-align:center;}
+.revenue-card{background:linear-gradient(135deg,#00b894,#00cec9);}
+.pending-card{background:linear-gradient(135deg,#d63031,#e17055);}
+.summary-card h4{margin:0;opacity:0.8;}
+.summary-card h2{margin-top:10px;font-size:28px;}
 
-.header h2{
-color:#ff8c00;
-margin:0;
-}
+.section-box{background:#1a1a1a;padding:25px;border-radius:12px;margin-top:30px;}
 
-.logout-btn{
-background:#ff8c00;
-border:none;
-padding:8px 15px;
-color:white;
-border-radius:6px;
-cursor:pointer;
-transition:0.3s;
-}
-.logout-btn:hover{
-background:#ff5e00;
-transform:scale(1.05);
-}
+input{padding:8px 10px;margin:5px;border-radius:6px;border:none;}
+button{background:#ff8c00;border:none;padding:8px 14px;color:white;border-radius:6px;cursor:pointer;}
 
-.container{
-padding:40px;
-}
-
-/* SUMMARY */
-.summary-container{
-display:flex;
-gap:20px;
-margin-bottom:30px;
-}
-
-.summary-card{
-flex:1;
-padding:25px;
-border-radius:15px;
-text-align:center;
-box-shadow:0 0 25px rgba(0,0,0,0.4);
-}
-
-.summary-card h4{
-margin:0;
-opacity:0.8;
-}
-
-.summary-card h2{
-margin-top:10px;
-font-size:28px;
-}
-
-.revenue-card{
-background:linear-gradient(135deg,#00b894,#00cec9);
-}
-
-.pending-card{
-background:linear-gradient(135deg,#d63031,#e17055);
-}
-
-.section-box{
-background:#1a1a1a;
-padding:25px;
-border-radius:12px;
-margin-top:30px;
-box-shadow:0 0 25px rgba(255,140,0,0.15);
-}
-
-input{
-padding:8px 10px;
-margin:5px;
-border-radius:6px;
-border:none;
-}
-
-button{
-background:#ff8c00;
-border:none;
-padding:8px 14px;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-table{
-width:100%;
-margin-top:15px;
-border-collapse:collapse;
-background:#151515;
-}
-
-th{
-background:#222;
-color:#ff8c00;
-}
-
-th,td{
-padding:12px;
-border-bottom:1px solid #2c2c2c;
-text-align:center;
-}
+table{width:100%;margin-top:15px;border-collapse:collapse;background:#151515;}
+th{background:#222;color:#ff8c00;}
+th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 
 .lock-btn{background:#d63031;}
 .unlock-btn{background:#00cec9;}
 .pay-btn{background:#0984e3;}
-
 </style>
 </head>
 
@@ -137,7 +44,6 @@ text-align:center;
 
 <div class="container">
 
-<!-- SUMMARY -->
 <div class="summary-container">
   <div class="summary-card revenue-card">
     <h4>Total Revenue</h4>
@@ -149,7 +55,6 @@ text-align:center;
   </div>
 </div>
 
-<!-- ATTENDANCE SETTINGS -->
 <div class="section-box">
 <h3>Attendance Closing Time</h3>
 <input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
@@ -160,7 +65,6 @@ text-align:center;
 <p id="timeStatus"></p>
 </div>
 
-<!-- ERP TABLE -->
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
@@ -173,6 +77,7 @@ text-align:center;
 <th>Paid</th>
 <th>Balance</th>
 <th>Status</th>
+<th>Work Status</th>
 <th>Payment</th>
 <th>Lock</th>
 </tr>
@@ -191,7 +96,7 @@ checkSession("admin");
 
 <script type="module">
 import { db } from "./firebase-config.js";
-import { collection, getDoc, getDocs, doc, setDoc, updateDoc, onSnapshot } 
+import { collection, getDoc, doc, setDoc, updateDoc, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const table = document.getElementById("customerTable");
@@ -206,7 +111,6 @@ snapshot.forEach(docSnap=>{
 docs.push({ id: docSnap.id, ...docSnap.data() });
 });
 
-// sort newest first safely
 docs.sort((a,b)=>{
 const A = a.createdAt?.seconds || 0;
 const B = b.createdAt?.seconds || 0;
@@ -225,7 +129,6 @@ totalRevenue += totalPaid;
 totalPending += balance;
 
 const status = balance===0 ? "Completed" : "Pending";
-
 const workStatus = data.workStatus || "Not Completed";
 
 table.innerHTML += `
@@ -236,16 +139,13 @@ table.innerHTML += `
 <td>₹${totalPaid}</td>
 <td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
 <td>${status}</td>
-
 <td>
 <select onchange="updateWorkStatus('${data.id}', this.value)">
 <option value="Not Completed" ${workStatus==="Not Completed"?"selected":""}>Not Completed</option>
 <option value="Completed" ${workStatus==="Completed"?"selected":""}>Completed</option>
 </select>
 </td>
-
 <td><button class="pay-btn" onclick="addPayment('${data.id}')">Add</button></td>
-
 <td>
 <button class="${data.isLocked?'unlock-btn':'lock-btn'}"
 onclick="toggleLock('${data.id}',${data.isLocked})">
@@ -254,15 +154,17 @@ ${data.isLocked?'Unlock':'Lock'}
 </td>
 </tr>`;
 
+});
+
 document.getElementById("totalRevenue").innerText =
 "₹ " + totalRevenue.toLocaleString();
 
 document.getElementById("totalPending").innerText =
 "₹ " + totalPending.toLocaleString();
 
-});
+});  // ✅ CLOSED PROPERLY
 
-/* ADD PAYMENT */
+
 window.addPayment=async function(id){
 const amount=prompt("Enter Payment Amount:");
 if(!amount||isNaN(amount)) return;
@@ -281,14 +183,18 @@ payments:payments
 });
 };
 
-/* LOCK */
 window.toggleLock=async function(id,state){
 await updateDoc(doc(db,"customerPayments",id),{
 isLocked:!state
 });
 };
 
-/* ATTENDANCE SETTINGS */
+window.updateWorkStatus=async function(id,value){
+await updateDoc(doc(db,"customerPayments",id),{
+workStatus:value
+});
+};
+
 async function loadClosingTime(){
 const snap=await getDoc(doc(db,"settings","attendance"));
 if(snap.exists()){
@@ -310,7 +216,6 @@ await setDoc(doc(db,"settings","attendance"),
 document.getElementById("timeStatus").innerText="Updated successfully!";
 };
 
-/* LOGOUT */
 window.logoutUser=function(){
 window.location.href="index.html";
 };
