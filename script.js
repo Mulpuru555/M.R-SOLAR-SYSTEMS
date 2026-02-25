@@ -127,29 +127,21 @@ window.calculatePayback = function() {
 
 // ================= WHATSAPP =================
 
-window.sendWhatsApp = function() {
+function sendWhatsApp(){
+const name = document.getElementById("name").value;
+const mobile = document.getElementById("mobile").value;
+const location = document.getElementById("locationInput").value;
+const service = document.getElementById("serviceType").value;
 
-    let name = document.getElementById("name").value;
-    let mobile = document.getElementById("mobile").value;
-    let location = document.getElementById("locationInput").value;
-    let type = document.getElementById("serviceType").value;
+const message =
+`Hello M.R Solar Systems,
+I am ${name} from ${location}.
+I am interested in ${service}.
+Please share subsidy & pricing details.
+Mobile: ${mobile}`;
 
-    if (!name || !mobile || !location) {
-        alert("Please fill all fields.");
-        return;
-    }
-
-    let message = `Service Request:%0A
-Name: ${name}%0A
-Mobile: ${mobile}%0A
-Location: ${location}%0A
-Type: ${type}`;
-
-    let url = `https://wa.me/919154777773?text=${message}`;
-
-    window.open(url, "_blank");
-};
-
+window.open("https://wa.me/919154777773?text=" + encodeURIComponent(message));
+}
 
 // ================= SMART LEAD POPUP =================
 
@@ -258,3 +250,4 @@ function closeLeadPopup() {
         popup.style.display = "none";
     }
 }
+
