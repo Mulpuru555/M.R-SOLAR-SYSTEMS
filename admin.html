@@ -226,7 +226,14 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const table = document.getElementById("customerTable");
 
-onSnapshot(collection(db,"customerPayments"), (snapshot) => {
+import { query, orderBy } from "firebase/firestore";
+
+const q = query(
+  collection(db,"customerPayments"),
+  orderBy("createdAt","desc")
+);
+
+onSnapshot(q, (snapshot) => {
 
 table.innerHTML = "";
 
