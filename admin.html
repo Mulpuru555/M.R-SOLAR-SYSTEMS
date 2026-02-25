@@ -33,6 +33,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 .unlock-btn{background:#00cec9;}
 .pay-btn{background:#0984e3;}
 .serial{color:#ff8c00;font-weight:600;}
+.performance-card{background:#151515;padding:15px;border-radius:10px;margin-bottom:10px;}
 </style>
 </head>
 
@@ -45,6 +46,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 
 <div class="container">
 
+<!-- MAIN SUMMARY -->
 <div class="summary-container">
   <div class="summary-card revenue-card">
     <h4>Total Revenue</h4>
@@ -56,6 +58,13 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
   </div>
 </div>
 
+<!-- EXECUTIVE PERFORMANCE -->
+<div class="section-box">
+<h3>Executive Performance Summary</h3>
+<div id="executivePerformance"></div>
+</div>
+
+<!-- ATTENDANCE SETTINGS -->
 <div class="section-box">
 <h3>Attendance Closing Time</h3>
 <input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
@@ -66,10 +75,10 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 <p id="timeStatus"></p>
 </div>
 
+<!-- ERP TABLE -->
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
-<!-- Search & Filter -->
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
 <input type="text" id="searchInput" placeholder="Search Customer / Executive">
 <label>
@@ -81,7 +90,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 <table>
 <thead>
 <tr>
-<th style="width:60px;">S.No</th>
+<th>S.No</th>
 <th>Customer</th>
 <th>Executive</th>
 <th>Total</th>
@@ -111,29 +120,41 @@ import { collection, getDoc, doc, setDoc, updateDoc, getDocs, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const table = document.getElementById("customerTable");
+const searchInput = document.getElementById("searchInput");
+const pendingCheckbox = document.getElementById("pendingOnly");
+const performanceDiv = document.getElementById("executivePerformance");
+
+let allDocs = [];
 
 onSnapshot(collection(db,"customerPayments"), (snapshot) => {
+allDocs = [];
+snapshot.forEach(docSnap=>{
+allDocs.push({ id: docSnap.id, ...docSnap.data() });
+});
+renderDashboard();
+});
+
+function renderDashboard(){
 
 let totalRevenue = 0;
 let totalPending = 0;
-const docs = [];
+let execMap = {};
 
-snapshot.forEach(docSnap=>{
-docs.push({ id: docSnap.id, ...docSnap.data() });
-});
+const searchText = searchInput.value.toLowerCase();
+const pendingOnly = pendingCheckbox.checked;
 
-docs.sort((a,b)=>{
+table.innerHTML = "";
+performanceDiv.innerHTML = "";
+
+const sortedDocs = [...allDocs].sort((a,b)=>{
 const A = a.createdAt?.seconds || 0;
 const B = b.createdAt?.seconds || 0;
 return B - A;
 });
 
-table.innerHTML = "";
+let serial = 1;
 
-const searchText = document.getElementById("searchInput").value.toLowerCase();
-const pendingOnly = document.getElementById("pendingOnly").checked;
-
-docs.forEach((data,index)=>{
+sortedDocs.forEach(data=>{
 
 const payments = data.payments || [];
 const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
@@ -141,22 +162,35 @@ const balance = data.totalAmount - totalPaid;
 const status = balance===0 ? "Completed" : "Pending";
 const workStatus = data.workStatus || "Not Completed";
 
-// SEARCH
+/* SEARCH FILTER */
 if(searchText){
 const match1 = data.customerName?.toLowerCase().includes(searchText);
 const match2 = data.executiveName?.toLowerCase().includes(searchText);
 if(!match1 && !match2) return;
 }
 
-// FILTER
+/* PENDING FILTER */
 if(pendingOnly && balance===0) return;
 
 totalRevenue += totalPaid;
 totalPending += balance;
 
+/* EXECUTIVE PERFORMANCE */
+if(!execMap[data.executiveName]){
+execMap[data.executiveName] = {
+customers:0,
+revenue:0,
+pending:0
+};
+}
+execMap[data.executiveName].customers++;
+execMap[data.executiveName].revenue += totalPaid;
+execMap[data.executiveName].pending += balance;
+
+/* TABLE */
 table.innerHTML += `
 <tr>
-<td class="serial">${index + 1}</td>
+<td class="serial">${serial++}</td>
 <td>${data.customerName}</td>
 <td>${data.executiveName}</td>
 <td>₹${data.totalAmount}</td>
@@ -179,16 +213,31 @@ ${data.isLocked?'Unlock':'Lock'}
 </tr>`;
 });
 
+/* PERFORMANCE DISPLAY */
+Object.keys(execMap).forEach(name=>{
+const data = execMap[name];
+const total = data.revenue + data.pending;
+const percent = total>0 ? ((data.revenue/total)*100).toFixed(1) : 0;
+
+performanceDiv.innerHTML += `
+<div class="performance-card">
+<strong>${name}</strong><br>
+Customers: ${data.customers} |
+Revenue: ₹${data.revenue.toLocaleString()} |
+Pending: ₹${data.pending.toLocaleString()} |
+Collection: ${percent}%
+</div>`;
+});
+
 document.getElementById("totalRevenue").innerText =
 "₹ " + totalRevenue.toLocaleString();
 
 document.getElementById("totalPending").innerText =
 "₹ " + totalPending.toLocaleString();
+}
 
-});
-
-document.getElementById("searchInput").addEventListener("input",()=>location.reload());
-document.getElementById("pendingOnly").addEventListener("change",()=>location.reload());
+searchInput.addEventListener("input", renderDashboard);
+pendingCheckbox.addEventListener("change", renderDashboard);
 
 window.addPayment=async function(id){
 const amount=prompt("Enter Payment Amount:");
@@ -210,17 +259,13 @@ await updateDoc(doc(db,"customerPayments",id),{workStatus:value});
 
 window.exportFullReport=async function(){
 const snapshot=await getDocs(collection(db,"customerPayments"));
-let csv="S.No,Customer,Executive,Total,Paid,Balance,Status,WorkStatus\n";
-let count=1;
+let csv="Customer,Executive,Total,Paid,Balance\n";
 snapshot.forEach(docSnap=>{
 const data=docSnap.data();
 const payments=data.payments||[];
 const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
 const balance=data.totalAmount-totalPaid;
-const status=balance===0?"Completed":"Pending";
-const workStatus=data.workStatus||"Not Completed";
-csv+=`${count},${data.customerName},${data.executiveName},${data.totalAmount},${totalPaid},${balance},${status},${workStatus}\n`;
-count++;
+csv+=`${data.customerName},${data.executiveName},${data.totalAmount},${totalPaid},${balance}\n`;
 });
 const blob=new Blob([csv],{type:"text/csv"});
 const link=document.createElement("a");
@@ -253,7 +298,6 @@ document.getElementById("timeStatus").innerText="Updated successfully!";
 window.logoutUser=function(){
 window.location.href="index.html";
 };
-
 </script>
 
 <script type="module" src="auth.js"></script>
