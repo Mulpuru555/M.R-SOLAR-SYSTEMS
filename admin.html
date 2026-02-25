@@ -46,8 +46,7 @@ transform:scale(1.05);
 padding:40px;
 }
 
-/* ===== SUMMARY CARDS ===== */
-
+/* SUMMARY */
 .summary-container{
 display:flex;
 gap:20px;
@@ -64,7 +63,6 @@ box-shadow:0 0 25px rgba(0,0,0,0.4);
 
 .summary-card h4{
 margin:0;
-font-weight:500;
 opacity:0.8;
 }
 
@@ -89,12 +87,11 @@ margin-top:30px;
 box-shadow:0 0 25px rgba(255,140,0,0.15);
 }
 
-input,select{
+input{
 padding:8px 10px;
 margin:5px;
 border-radius:6px;
 border:none;
-outline:none;
 }
 
 button{
@@ -104,11 +101,6 @@ padding:8px 14px;
 color:white;
 border-radius:6px;
 cursor:pointer;
-transition:0.3s;
-}
-button:hover{
-background:#ff5e00;
-transform:scale(1.05);
 }
 
 table{
@@ -116,29 +108,17 @@ width:100%;
 margin-top:15px;
 border-collapse:collapse;
 background:#151515;
-border-radius:10px;
-overflow:hidden;
 }
 
 th{
 background:#222;
 color:#ff8c00;
-font-weight:600;
 }
 
 th,td{
 padding:12px;
 border-bottom:1px solid #2c2c2c;
 text-align:center;
-}
-
-tr{
-transition:0.2s;
-}
-
-tr:hover{
-background:#1f1f1f;
-transform:scale(1.01);
 }
 
 .lock-btn{background:#d63031;}
@@ -157,20 +137,19 @@ transform:scale(1.01);
 
 <div class="container">
 
-<!-- SUMMARY CARDS -->
+<!-- SUMMARY -->
 <div class="summary-container">
   <div class="summary-card revenue-card">
     <h4>Total Revenue</h4>
     <h2 id="totalRevenue">₹ 0</h2>
   </div>
-
   <div class="summary-card pending-card">
     <h4>Total Pending</h4>
     <h2 id="totalPending">₹ 0</h2>
   </div>
 </div>
 
-<!-- ATTENDANCE TIME CONTROL -->
+<!-- ATTENDANCE SETTINGS -->
 <div class="section-box">
 <h3>Attendance Closing Time</h3>
 <input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
@@ -181,15 +160,7 @@ transform:scale(1.01);
 <p id="timeStatus"></p>
 </div>
 
-<!-- MONTHLY ATTENDANCE -->
-<div class="section-box">
-<h3>Monthly Attendance Report</h3>
-<input type="month" id="monthPicker">
-<button onclick="generateMonthlyReport()">Generate Report</button>
-<div id="monthlyReport" style="margin-top:15px;"></div>
-</div>
-
-<!-- ERP MANAGEMENT -->
+<!-- ERP TABLE -->
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
@@ -202,7 +173,6 @@ transform:scale(1.01);
 <th>Paid</th>
 <th>Balance</th>
 <th>Status</th>
-<th>Work Status</th>
 <th>Payment</th>
 <th>Lock</th>
 </tr>
@@ -221,74 +191,64 @@ checkSession("admin");
 
 <script type="module">
 import { db } from "./firebase-config.js";
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, onSnapshot } 
+import { collection, getDoc, getDocs, doc, setDoc, updateDoc, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const table = document.getElementById("customerTable");
 
-import { query, orderBy } from "firebase/firestore";
-
-const q = query(
-  collection(db,"customerPayments"),
-  orderBy("createdAt","desc")
-);
-
 onSnapshot(collection(db,"customerPayments"), (snapshot) => {
 
-  const docs = [];
-  let totalRevenue = 0;
-  let totalPending = 0;
+let totalRevenue = 0;
+let totalPending = 0;
+const docs = [];
 
-  snapshot.forEach(docSnap => {
-    docs.push({ id: docSnap.id, ...docSnap.data() });
-  });
+snapshot.forEach(docSnap=>{
+docs.push({ id: docSnap.id, ...docSnap.data() });
+});
 
-  // Manual sorting (newest first)
-  docs.sort((a,b) => {
-    const dateA = a.createdAt?.seconds || 0;
-    const dateB = b.createdAt?.seconds || 0;
-    return dateB - dateA;
-  });
+// sort newest first safely
+docs.sort((a,b)=>{
+const A = a.createdAt?.seconds || 0;
+const B = b.createdAt?.seconds || 0;
+return B - A;
+});
 
-  table.innerHTML = "";
+table.innerHTML = "";
 
-  docs.forEach(data => {
+docs.forEach(data=>{
 
-    const payments = data.payments || [];
-    const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
-    const balance = data.totalAmount - totalPaid;
+const payments = data.payments || [];
+const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
+const balance = data.totalAmount - totalPaid;
 
-    totalRevenue += totalPaid;
-    totalPending += balance;
+totalRevenue += totalPaid;
+totalPending += balance;
 
-    const status = balance===0 ? "Completed" : "Pending";
-    const workStatus = data.workStatus || "Not Completed";
+const status = balance===0 ? "Completed" : "Pending";
 
-    table.innerHTML += `
-    <tr>
-      <td>${data.customerName}</td>
-      <td>${data.executiveName}</td>
-      <td>₹${data.totalAmount}</td>
-      <td>₹${totalPaid}</td>
-      <td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
-      <td>${status}</td>
-      <td>${workStatus}</td>
-      <td><button class="pay-btn" onclick="addPayment('${data.id}')">Add</button></td>
-      <td>
-        <button class="${data.isLocked?'unlock-btn':'lock-btn'}"
-        onclick="toggleLock('${data.id}',${data.isLocked})">
-        ${data.isLocked?'Unlock':'Lock'}
-        </button>
-      </td>
-    </tr>`;
-  });
+table.innerHTML += `
+<tr>
+<td>${data.customerName}</td>
+<td>${data.executiveName}</td>
+<td>₹${data.totalAmount}</td>
+<td>₹${totalPaid}</td>
+<td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
+<td>${status}</td>
+<td><button class="pay-btn" onclick="addPayment('${data.id}')">Add</button></td>
+<td>
+<button class="${data.isLocked?'unlock-btn':'lock-btn'}"
+onclick="toggleLock('${data.id}',${data.isLocked})">
+${data.isLocked?'Unlock':'Lock'}
+</button>
+</td>
+</tr>`;
+});
 
-  // Update summary cards
-  document.getElementById("totalRevenue").innerText =
-    "₹ " + totalRevenue.toLocaleString();
+document.getElementById("totalRevenue").innerText =
+"₹ " + totalRevenue.toLocaleString();
 
-  document.getElementById("totalPending").innerText =
-    "₹ " + totalPending.toLocaleString();
+document.getElementById("totalPending").innerText =
+"₹ " + totalPending.toLocaleString();
 
 });
 
@@ -311,76 +271,11 @@ payments:payments
 });
 };
 
-/* LOCK / UNLOCK */
-window.toggleLock=async function(id,currentState){
+/* LOCK */
+window.toggleLock=async function(id,state){
 await updateDoc(doc(db,"customerPayments",id),{
-isLocked:!currentState
+isLocked:!state
 });
-};
-
-window.updateWorkStatus = async function(id, value){
-await updateDoc(doc(db,"customerPayments",id),{
-workStatus:value
-});
-};
-
-/* MONTHLY ATTENDANCE */
-window.generateMonthlyReport = async function(){
-
-const month = document.getElementById("monthPicker").value;
-if(!month){ alert("Select month"); return; }
-
-const [year, mon] = month.split("-");
-const selectedYear = Number(year);
-const selectedMonth = Number(mon);
-
-const usersSnapshot = await getDocs(collection(db,"users"));
-const attendanceSnapshot = await getDocs(collection(db,"attendance"));
-
-let html = "";
-
-usersSnapshot.forEach(userDoc=>{
-const user = userDoc.data();
-
-if(user.role === "employee"){
-
-let present = 0;
-let workingDays = 0;
-let date = new Date(selectedYear, selectedMonth-1, 1);
-
-while(date.getMonth() === selectedMonth-1){
-if(date.getDay() !== 0){ workingDays++; }
-date.setDate(date.getDate()+1);
-}
-
-attendanceSnapshot.forEach(attDoc=>{
-const att = attDoc.data();
-if(att.employeeId === userDoc.id && att.date){
-const dateObj = new Date(att.date);
-if(dateObj.getFullYear()===selectedYear &&
-dateObj.getMonth()+1===selectedMonth){
-present++;
-}
-}
-});
-
-const absent = workingDays - present;
-const percentage = workingDays>0?((present/workingDays)*100).toFixed(2):0;
-
-html += `
-<div style="margin-bottom:10px;padding:8px;background:#222;border-radius:6px;">
-<strong>${user.name}</strong><br>
-Present: ${present} <br>
-Absent: ${absent} <br>
-Working Days: ${workingDays} <br>
-Attendance: <span style="color:${percentage>=75?'#00e676':'#ff5252'}">
-${percentage}%
-</span>
-</div>`;
-}
-});
-
-document.getElementById("monthlyReport").innerHTML = html || "No records.";
 };
 
 /* ATTENDANCE SETTINGS */
