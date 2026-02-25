@@ -198,24 +198,37 @@ function startLocationTracking(){
   );
 }
 
-/* ==============================
-   MARK ATTENDANCE
-============================== */
 window.markAttendance = async function(){
-  const user = auth.currentUser;
-  const today = new Date().toISOString().split("T")[0];
 
-  await addDoc(collection(db,"attendance"),{
-    employeeId:user.uid,
-    date:today,
-    timestamp:serverTimestamp()
-  });
+const user = auth.currentUser;
+const today = new Date().toISOString().split("T")[0];
 
-  statusBox.innerText = "Attendance Marked Successfully";
+const q = query(
+  collection(db,"attendance"),
+  where("employeeId","==",user.uid),
+  where("date","==",today)
+);
+
+const snapshot = await getDocs(q);
+
+if(!snapshot.empty){
+  statusBox.innerText = "Attendance already marked today.";
   btn.disabled = true;
-};
+  return;
+}
 
-/* ==============================
+await addDoc(collection(db,"attendance"),{
+  employeeId:user.uid,
+  date:today,
+  timestamp:serverTimestamp()
+});
+
+statusBox.innerText = "Attendance Marked Successfully";
+btn.disabled = true;
+
+};
+   
+
    DISTANCE FORMULA
 ============================== */
 function calculateDistance(lat1, lon1, lat2, lon2){
