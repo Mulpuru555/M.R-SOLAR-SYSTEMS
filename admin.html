@@ -32,6 +32,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 .lock-btn{background:#d63031;}
 .unlock-btn{background:#00cec9;}
 .pay-btn{background:#0984e3;}
+.serial{color:#ff8c00;font-weight:600;}
 </style>
 </head>
 
@@ -68,9 +69,19 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
+<!-- Search & Filter -->
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+<input type="text" id="searchInput" placeholder="Search Customer / Executive">
+<label>
+<input type="checkbox" id="pendingOnly"> Show Pending Only
+</label>
+<button onclick="exportFullReport()">Export CSV</button>
+</div>
+
 <table>
 <thead>
 <tr>
+<th style="width:60px;">S.No</th>
 <th>Customer</th>
 <th>Executive</th>
 <th>Total</th>
@@ -96,7 +107,7 @@ checkSession("admin");
 
 <script type="module">
 import { db } from "./firebase-config.js";
-import { collection, getDoc, doc, setDoc, updateDoc, onSnapshot } 
+import { collection, getDoc, doc, setDoc, updateDoc, getDocs, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const table = document.getElementById("customerTable");
@@ -119,20 +130,33 @@ return B - A;
 
 table.innerHTML = "";
 
-docs.forEach(data=>{
+const searchText = document.getElementById("searchInput").value.toLowerCase();
+const pendingOnly = document.getElementById("pendingOnly").checked;
+
+docs.forEach((data,index)=>{
 
 const payments = data.payments || [];
 const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
 const balance = data.totalAmount - totalPaid;
+const status = balance===0 ? "Completed" : "Pending";
+const workStatus = data.workStatus || "Not Completed";
+
+// SEARCH
+if(searchText){
+const match1 = data.customerName?.toLowerCase().includes(searchText);
+const match2 = data.executiveName?.toLowerCase().includes(searchText);
+if(!match1 && !match2) return;
+}
+
+// FILTER
+if(pendingOnly && balance===0) return;
 
 totalRevenue += totalPaid;
 totalPending += balance;
 
-const status = balance===0 ? "Completed" : "Pending";
-const workStatus = data.workStatus || "Not Completed";
-
 table.innerHTML += `
 <tr>
+<td class="serial">${index + 1}</td>
 <td>${data.customerName}</td>
 <td>${data.executiveName}</td>
 <td>₹${data.totalAmount}</td>
@@ -153,7 +177,6 @@ ${data.isLocked?'Unlock':'Lock'}
 </button>
 </td>
 </tr>`;
-
 });
 
 document.getElementById("totalRevenue").innerText =
@@ -162,37 +185,48 @@ document.getElementById("totalRevenue").innerText =
 document.getElementById("totalPending").innerText =
 "₹ " + totalPending.toLocaleString();
 
-});  // ✅ CLOSED PROPERLY
+});
 
+document.getElementById("searchInput").addEventListener("input",()=>location.reload());
+document.getElementById("pendingOnly").addEventListener("change",()=>location.reload());
 
 window.addPayment=async function(id){
 const amount=prompt("Enter Payment Amount:");
 if(!amount||isNaN(amount)) return;
-
 const snap=await getDoc(doc(db,"customerPayments",id));
 const data=snap.data();
 const payments=data.payments||[];
-
-payments.push({
-amount:Number(amount),
-date:new Date().toISOString().split("T")[0]
-});
-
-await updateDoc(doc(db,"customerPayments",id),{
-payments:payments
-});
+payments.push({amount:Number(amount),date:new Date().toISOString().split("T")[0]});
+await updateDoc(doc(db,"customerPayments",id),{payments:payments});
 };
 
 window.toggleLock=async function(id,state){
-await updateDoc(doc(db,"customerPayments",id),{
-isLocked:!state
-});
+await updateDoc(doc(db,"customerPayments",id),{isLocked:!state});
 };
 
 window.updateWorkStatus=async function(id,value){
-await updateDoc(doc(db,"customerPayments",id),{
-workStatus:value
+await updateDoc(doc(db,"customerPayments",id),{workStatus:value});
+};
+
+window.exportFullReport=async function(){
+const snapshot=await getDocs(collection(db,"customerPayments"));
+let csv="S.No,Customer,Executive,Total,Paid,Balance,Status,WorkStatus\n";
+let count=1;
+snapshot.forEach(docSnap=>{
+const data=docSnap.data();
+const payments=data.payments||[];
+const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
+const balance=data.totalAmount-totalPaid;
+const status=balance===0?"Completed":"Pending";
+const workStatus=data.workStatus||"Not Completed";
+csv+=`${count},${data.customerName},${data.executiveName},${data.totalAmount},${totalPaid},${balance},${status},${workStatus}\n`;
+count++;
 });
+const blob=new Blob([csv],{type:"text/csv"});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download="Full_Report.csv";
+link.click();
 };
 
 async function loadClosingTime(){
