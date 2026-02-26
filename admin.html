@@ -326,7 +326,6 @@ await setDoc(doc(db,"settings","attendance"),
 {closeHour:hour,closeMinute:minute},{merge:true});
 document.getElementById("timeStatus").innerText="Updated successfully!";
 };
-
 window.generateAttendanceReport = async function(){
 
 let month = document.getElementById("reportMonth").value;
@@ -366,11 +365,9 @@ html += `<tr>
 html += "</table>";
 
 document.getElementById("attendanceReportData").innerHTML = html;
+
 };
 
-window.logoutUser=function(){
-window.location.href="index.html";
-};
 </script>
 
 <script type="module" src="auth.js"></script>
