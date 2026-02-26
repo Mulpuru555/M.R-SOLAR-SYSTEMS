@@ -150,6 +150,8 @@ document.getElementById(id).classList.add('active');
 const table=document.getElementById("customerTable");
 const searchInput=document.getElementById("searchInput");
 const pendingCheckbox=document.getElementById("pendingOnly");
+searchInput.addEventListener("input", renderDashboard);
+pendingCheckbox.addEventListener("change", renderDashboard);
 
 let allDocs=[];
 
