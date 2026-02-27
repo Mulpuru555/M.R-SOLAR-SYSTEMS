@@ -9,49 +9,20 @@
 
 <style>
 body { margin: 0; font-family: 'Montserrat', sans-serif; background: #111; color: white; }
-
 .header { background: #000; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-
 .header h2 { color: #ff8c00; margin: 0; }
-
 .logout-btn { background: #ff8c00; border: none; padding: 8px 15px; color: white; cursor: pointer; border-radius: 5px; }
-
 .container { padding: 40px; }
-
-.date-section { margin-top: 10px; }
-
 input[type="date"] { padding: 8px; border-radius: 5px; border: none; }
-
-.table-box {
-  margin-top: 30px;
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(255,140,0,0.2);
-}
-
+.table-box { margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(255,140,0,0.2); }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-
 th, td { padding: 12px; text-align: left; }
-
 th { background: #222; color: #ff8c00; }
-
 tr:nth-child(even) { background: #1f1f1f; }
-
 .status-present { color: #00e676; font-weight: bold; }
 .status-absent { color: #ff5252; font-weight: bold; }
-
-.unblock-btn {
-  background: #ff5252;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-.unblock-btn:hover {
-  background: #ff0000;
-}
+.unblock-btn { background: #ff5252; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; }
+.unblock-btn:hover { background: #ff0000; }
 </style>
 </head>
 
@@ -66,10 +37,8 @@ tr:nth-child(even) { background: #1f1f1f; }
 
   <h1>Attendance Report</h1>
 
-  <div class="date-section">
-    <label>Select Date: </label>
-    <input type="date" id="attendanceDate">
-  </div>
+  <label>Select Date: </label>
+  <input type="date" id="attendanceDate">
 
   <div class="table-box">
     <table>
@@ -84,7 +53,6 @@ tr:nth-child(even) { background: #1f1f1f; }
     </table>
   </div>
 
-  <!-- NEW BLOCKED EMPLOYEES SECTION -->
   <h1 style="margin-top:60px;">Blocked Employees</h1>
 
   <div class="table-box">
@@ -104,7 +72,7 @@ tr:nth-child(even) { background: #1f1f1f; }
 
 </div>
 
-<!-- Protect Manager Page -->
+<!-- SESSION PROTECTION -->
 <script type="module">
 import { checkSession, logoutUser } from "./auth.js";
 checkSession("manager");
@@ -116,90 +84,75 @@ import { db } from "./firebase-config.js";
 import { collection, getDocs, query, where, doc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const tableBody = document.getElementById("attendanceTable");
+const attendanceBody = document.getElementById("attendanceTable");
 const blockedBody = document.getElementById("blockedTable");
 const dateInput = document.getElementById("attendanceDate");
 
 const today = new Date().toISOString().split("T")[0];
 dateInput.value = today;
 
-/* ==============================
-   LOAD ATTENDANCE (UNCHANGED)
-============================== */
+/* ======================
+   LOAD ATTENDANCE
+====================== */
 async function loadAttendance(selectedDate) {
 
-  tableBody.innerHTML = "";
+  attendanceBody.innerHTML = "";
 
   const usersSnapshot = await getDocs(collection(db, "users"));
 
-  const attendanceQuery = query(
-    collection(db, "attendance"),
-    where("date", "==", selectedDate)
+  const attendanceSnapshot = await getDocs(
+    query(collection(db, "attendance"), where("date", "==", selectedDate))
   );
 
-  const attendanceSnapshot = await getDocs(attendanceQuery);
-
   const attendanceMap = {};
-
-  attendanceSnapshot.forEach(doc => {
-    const data = doc.data();
-    attendanceMap[data.employeeId] = data.timestamp;
+  attendanceSnapshot.forEach(docSnap => {
+    attendanceMap[docSnap.data().employeeId] = docSnap.data().timestamp;
   });
 
   usersSnapshot.forEach(docSnap => {
     const user = docSnap.data();
-
     if (user.role === "employee") {
 
       const row = document.createElement("tr");
 
-      const nameCell = document.createElement("td");
-      nameCell.innerText = user.name || "Employee";
+      const timestamp = attendanceMap[docSnap.id];
 
-      const statusCell = document.createElement("td");
-      const timeCell = document.createElement("td");
+      row.innerHTML = `
+        <td>${user.name || "Employee"}</td>
+        <td>${
+          timestamp ? 
+          "<span class='status-present'>Present</span>" :
+          "<span class='status-absent'>Absent</span>"
+        }</td>
+        <td>${
+          timestamp && timestamp.seconds ?
+          new Date(timestamp.seconds * 1000).toLocaleTimeString("en-IN") :
+          "-"
+        }</td>
+      `;
 
-      if (attendanceMap[docSnap.id]) {
-        statusCell.innerHTML = "<span class='status-present'>Present</span>";
-
-        const timestamp = attendanceMap[docSnap.id];
-        if (timestamp?.seconds) {
-          const dateObj = new Date(timestamp.seconds * 1000);
-          timeCell.innerText = dateObj.toLocaleTimeString("en-IN");
-        } else {
-          timeCell.innerText = "-";
-        }
-
-      } else {
-        statusCell.innerHTML = "<span class='status-absent'>Absent</span>";
-        timeCell.innerText = "-";
-      }
-
-      row.appendChild(nameCell);
-      row.appendChild(statusCell);
-      row.appendChild(timeCell);
-      tableBody.appendChild(row);
+      attendanceBody.appendChild(row);
     }
   });
 }
 
-/* ==============================
-   LOAD BLOCKED USERS (NEW)
-============================== */
+/* ======================
+   LOAD BLOCKED USERS
+====================== */
 async function loadBlockedUsers() {
 
   blockedBody.innerHTML = "";
 
-  const blockedQuery = query(
-    collection(db, "users"),
-    where("accountStatus", "==", "blocked")
+  const snapshot = await getDocs(
+    query(collection(db, "users"), where("accountStatus", "==", "blocked"))
   );
 
-  const snapshot = await getDocs(blockedQuery);
-
   snapshot.forEach(docSnap => {
-
     const user = docSnap.data();
+
+    const blockedDate = user.blockedOn && user.blockedOn.seconds
+      ? new Date(user.blockedOn.seconds * 1000).toLocaleString("en-IN")
+      : "-";
 
     const row = document.createElement("tr");
 
@@ -207,24 +160,26 @@ async function loadBlockedUsers() {
       <td>${user.name || "Employee"}</td>
       <td>${user.branch || "-"}</td>
       <td>${user.blockReason || "-"}</td>
-      <td>${user.blockedOn?.seconds ? 
-        new Date(user.blockedOn.seconds * 1000).toLocaleString("en-IN") : "-"}</td>
+      <td>${blockedDate}</td>
       <td><button class="unblock-btn" data-id="${docSnap.id}">Unblock</button></td>
     `;
 
     blockedBody.appendChild(row);
   });
 
+  // Attach unblock events
   document.querySelectorAll(".unblock-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
+
       const userId = btn.getAttribute("data-id");
 
-      await updateDoc(doc(db,"users",user.uid),{
-  accountStatus:"blocked",
-  blockReason:"Absent without intimation",
-  blockedOn: serverTimestamp()
-});
+      await updateDoc(doc(db, "users", userId), {
+        accountStatus: "active",
+        blockReason: "",
+        blockedOn: null
+      });
 
+      alert("Employee Unblocked Successfully");
       loadBlockedUsers();
     });
   });
@@ -236,6 +191,7 @@ dateInput.addEventListener("change", () => {
 
 loadAttendance(today);
 loadBlockedUsers();
+
 </script>
 
 </body>
