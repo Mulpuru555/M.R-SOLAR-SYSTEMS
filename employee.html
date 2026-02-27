@@ -95,23 +95,28 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 onAuthStateChanged(auth, async (user)=>{
   if(user){
 
-    const empSnap = await getDoc(doc(db,"users",user.uid));
+    try{
 
-    if(empSnap.exists()){
-      const empData = empSnap.data();
+      const empSnap = await getDoc(doc(db,"users",user.uid));
 
-      // Already blocked
-      if(empData.accountStatus === "blocked"){
-        showBlockedScreen();
-        return;
+      if(empSnap.exists()){
+        const empData = empSnap.data();
+
+        if(empData.accountStatus === "blocked"){
+          showBlockedScreen();
+          return;
+        }
+
+        if(empData.role === "employee"){
+          await autoBlockIfAbsent(user);
+        }
       }
 
-      // Auto block only for employees
-      if(empData.role === "employee"){
-        await autoBlockIfAbsent(user);
-      }
+    }catch(error){
+      console.error("Auto block check failed:", error);
     }
 
+    // ALWAYS RUN THESE
     startCountdown();
     startLocationTracking();
     loadRecords();
@@ -125,37 +130,41 @@ onAuthStateChanged(auth, async (user)=>{
    AUTO BLOCK LOGIC (NEW)
 ============================== */
 async function autoBlockIfAbsent(user){
+  try{
 
-  const snap = await getDoc(doc(db,"settings","attendance"));
-  if(!snap.exists()) return;
+    const snap = await getDoc(doc(db,"settings","attendance"));
+    if(!snap.exists()) return;
 
-  const { closeHour = 10, closeMinute = 0 } = snap.data();
+    const { closeHour = 10, closeMinute = 0 } = snap.data();
 
-  const now = new Date();
-  const close = new Date();
-  close.setHours(closeHour, closeMinute, 0, 0);
+    const now = new Date();
+    const close = new Date();
+    close.setHours(closeHour, closeMinute, 0, 0);
 
-  if(now <= close) return;
+    if(now <= close) return;
 
-  const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
-  const q = query(
-    collection(db,"attendance"),
-    where("employeeId","==",user.uid),
-    where("date","==",today)
-  );
+    const q = query(
+      collection(db,"attendance"),
+      where("employeeId","==",user.uid),
+      where("date","==",today)
+    );
 
-  const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-  if(snapshot.empty){
+    if(snapshot.empty){
+      await updateDoc(doc(db,"users",user.uid),{
+        accountStatus:"blocked",
+        blockReason:"Absent without intimation",
+        blockedOn: serverTimestamp()
+      });
 
-    await updateDoc(doc(db,"users",user.uid),{
-      accountStatus:"blocked",
-      blockReason:"Absent without intimation",
-      blockedOn: serverTimestamp()
-    });
+      showBlockedScreen();
+    }
 
-    showBlockedScreen();
+  }catch(error){
+    console.error("Auto block internal error:", error);
   }
 }
 
