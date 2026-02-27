@@ -219,11 +219,11 @@ async function loadBlockedUsers() {
     btn.addEventListener("click", async () => {
       const userId = btn.getAttribute("data-id");
 
-      await updateDoc(doc(db, "users", userId), {
-        accountStatus: "active",
-        blockReason: "",
-        blockedOn: null
-      });
+      await updateDoc(doc(db,"users",user.uid),{
+  accountStatus:"blocked",
+  blockReason:"Absent without intimation",
+  blockedOn: serverTimestamp()
+});
 
       loadBlockedUsers();
     });
