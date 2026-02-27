@@ -72,17 +72,33 @@ tr:nth-child(even) { background: #1f1f1f; }
 
 </div>
 
-<!-- SESSION PROTECTION -->
 <script type="module">
-import { checkSession, logoutUser } from "./auth.js";
-checkSession("manager");
-window.logoutUser = logoutUser;
-</script>
-
-<script type="module">
-import { db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs, query, where, doc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* =========================
+   SESSION PROTECTION
+========================= */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+/* =========================
+   LOGOUT FUNCTION
+========================= */
+window.logoutUser = async function() {
+  try {
+    await signOut(auth);
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Logout Error:", error);
+  }
+};
 
 const attendanceBody = document.getElementById("attendanceTable");
 const blockedBody = document.getElementById("blockedTable");
@@ -91,15 +107,14 @@ const dateInput = document.getElementById("attendanceDate");
 const today = new Date().toISOString().split("T")[0];
 dateInput.value = today;
 
-/* ======================
+/* =========================
    LOAD ATTENDANCE
-====================== */
+========================= */
 async function loadAttendance(selectedDate) {
 
   attendanceBody.innerHTML = "";
 
   const usersSnapshot = await getDocs(collection(db, "users"));
-
   const attendanceSnapshot = await getDocs(
     query(collection(db, "attendance"), where("date", "==", selectedDate))
   );
@@ -113,10 +128,9 @@ async function loadAttendance(selectedDate) {
     const user = docSnap.data();
     if (user.role === "employee") {
 
-      const row = document.createElement("tr");
-
       const timestamp = attendanceMap[docSnap.id];
 
+      const row = document.createElement("tr");
       row.innerHTML = `
         <td>${user.name || "Employee"}</td>
         <td>${
@@ -136,9 +150,9 @@ async function loadAttendance(selectedDate) {
   });
 }
 
-/* ======================
+/* =========================
    LOAD BLOCKED USERS
-====================== */
+========================= */
 async function loadBlockedUsers() {
 
   blockedBody.innerHTML = "";
@@ -148,6 +162,7 @@ async function loadBlockedUsers() {
   );
 
   snapshot.forEach(docSnap => {
+
     const user = docSnap.data();
 
     const blockedDate = user.blockedOn && user.blockedOn.seconds
@@ -167,20 +182,24 @@ async function loadBlockedUsers() {
     blockedBody.appendChild(row);
   });
 
-  // Attach unblock events
   document.querySelectorAll(".unblock-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
 
       const userId = btn.getAttribute("data-id");
 
-      await updateDoc(doc(db, "users", userId), {
-        accountStatus: "active",
-        blockReason: "",
-        blockedOn: null
-      });
+      try {
+        await updateDoc(doc(db, "users", userId), {
+          accountStatus: "active",
+          blockReason: "",
+          blockedOn: null
+        });
 
-      alert("Employee Unblocked Successfully");
-      loadBlockedUsers();
+        alert("Employee Unblocked Successfully");
+        loadBlockedUsers();
+      } catch (error) {
+        console.error("Unblock Error:", error);
+      }
+
     });
   });
 }
