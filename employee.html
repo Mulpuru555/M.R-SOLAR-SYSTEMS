@@ -92,44 +92,69 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 /* ==============================
    AUTH + BLOCK + AUTO CHECK
 ============================== */
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    window.location.href="index.html";
-    return;
-  }
+async function autoBlockIfAbsent(user){
 
   try{
-    const empSnap = await getDoc(doc(db,"users",user.uid));
 
-    if(empSnap.exists()){
-      const empData = empSnap.data();
+    const settingsSnap = await getDoc(doc(db,"settings","attendance"));
+    if(!settingsSnap.exists()){
+      console.log("Settings document missing");
+      return;
+    }
 
-      if(empData.accountStatus === "blocked"){
-        showBlockedScreen();
-        return; // 🔴 THIS RETURN MUST STOP EVERYTHING
-      }
+    const { closeHour = 10, closeMinute = 0 } = settingsSnap.data();
 
-      if(empData.role === "employee"){
-        await autoBlockIfAbsent(user);
+    const now = new Date();
 
-        // 🔴 Check again after auto block
-        const updatedSnap = await getDoc(doc(db,"users",user.uid));
-        if(updatedSnap.data().accountStatus === "blocked"){
-          showBlockedScreen();
-          return;
-        }
-      }
+    const close = new Date();
+    close.setHours(closeHour);
+    close.setMinutes(closeMinute);
+    close.setSeconds(0);
+    close.setMilliseconds(0);
+
+    console.log("Now:", now);
+    console.log("Close:", close);
+
+    // 🔴 STRICT CHECK
+    if(now.getTime() <= close.getTime()){
+      console.log("Not yet past closing time");
+      return;
+    }
+
+    const today = now.getFullYear() + "-" +
+      String(now.getMonth()+1).padStart(2,"0") + "-" +
+      String(now.getDate()).padStart(2,"0");
+
+    console.log("Today:", today);
+
+    const attendanceQuery = query(
+      collection(db,"attendance"),
+      where("employeeId","==",user.uid),
+      where("date","==",today)
+    );
+
+    const attendanceSnap = await getDocs(attendanceQuery);
+
+    console.log("Attendance empty:", attendanceSnap.empty);
+
+    if(attendanceSnap.empty){
+
+      console.log("Blocking user...");
+
+      await updateDoc(doc(db,"users",user.uid),{
+        accountStatus:"blocked",
+        blockReason:"Absent without intimation",
+        blockedOn: serverTimestamp()
+      });
+
+      showBlockedScreen();
+      return;
     }
 
   }catch(error){
-    console.error("Block check error:", error);
+    console.error("Auto block error:", error);
   }
-
-  // Only runs if NOT blocked
-  startCountdown();
-  startLocationTracking();
-  loadRecords();
-});
+}
 /* ==============================
    AUTO BLOCK LOGIC (NEW)
 ============================== */
