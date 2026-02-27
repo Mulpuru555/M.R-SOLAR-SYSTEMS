@@ -93,39 +93,43 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
    AUTH + BLOCK + AUTO CHECK
 ============================== */
 onAuthStateChanged(auth, async (user)=>{
-  if(user){
+  if(!user){
+    window.location.href="index.html";
+    return;
+  }
 
-    try{
+  try{
+    const empSnap = await getDoc(doc(db,"users",user.uid));
 
-      const empSnap = await getDoc(doc(db,"users",user.uid));
+    if(empSnap.exists()){
+      const empData = empSnap.data();
 
-      if(empSnap.exists()){
-        const empData = empSnap.data();
+      if(empData.accountStatus === "blocked"){
+        showBlockedScreen();
+        return; // 🔴 THIS RETURN MUST STOP EVERYTHING
+      }
 
-        if(empData.accountStatus === "blocked"){
+      if(empData.role === "employee"){
+        await autoBlockIfAbsent(user);
+
+        // 🔴 Check again after auto block
+        const updatedSnap = await getDoc(doc(db,"users",user.uid));
+        if(updatedSnap.data().accountStatus === "blocked"){
           showBlockedScreen();
           return;
         }
-
-        if(empData.role === "employee"){
-          await autoBlockIfAbsent(user);
-        }
       }
-
-    }catch(error){
-      console.error("Auto block check failed:", error);
     }
 
-    // ALWAYS RUN THESE
-    startCountdown();
-    startLocationTracking();
-    loadRecords();
-
-  }else{
-    window.location.href="index.html";
+  }catch(error){
+    console.error("Block check error:", error);
   }
-});
 
+  // Only runs if NOT blocked
+  startCountdown();
+  startLocationTracking();
+  loadRecords();
+});
 /* ==============================
    AUTO BLOCK LOGIC (NEW)
 ============================== */
