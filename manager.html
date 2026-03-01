@@ -142,13 +142,21 @@ async function loadAttendance(selectedDate){
     query(collection(db,"users"), where("role","==","employee"))
   );
 
-  const attendanceSnapshot = await getDocs(
-    query(collection(db,"attendance"), where("date","==",selectedDate))
-  );
+  const attendanceSnapshot = await getDocs(collection(db,"attendance"));
 
   const attendanceMap = {};
+
   attendanceSnapshot.forEach(docSnap=>{
-    attendanceMap[docSnap.data().employeeId] = docSnap.data();
+    const data = docSnap.data();
+
+    // Accept both formats
+    if(
+      data.date === selectedDate ||
+      data.date === selectedDate.replaceAll("-", "/") ||
+      data.date === selectedDate.split("-").reverse().join("-")
+    ){
+      attendanceMap[data.employeeId] = data;
+    }
   });
 
   usersSnapshot.forEach(docSnap=>{
