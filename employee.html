@@ -10,26 +10,22 @@
 body{margin:0;font-family:'Montserrat',sans-serif;background:#0f0f0f;color:white;}
 .header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.6);}
 .header h2{color:#ff8c00;margin:0;}
-.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;transition:0.3s;}
-.logout-btn:hover{background:#ff5e00;transform:scale(1.05);}
+.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;}
 .dashboard-container{padding:40px;max-width:1200px;margin:auto;}
 .section-title{margin-bottom:15px;color:#ff8c00;font-weight:600;}
-.attendance-box{background:#1a1a1a;padding:30px;border-radius:15px;box-shadow:0 0 20px rgba(255,140,0,0.15);margin-bottom:40px;text-align:center;}
-.attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;transition:0.3s;}
-.attendance-btn:hover{transform:scale(1.05);}
+.attendance-box{background:#1a1a1a;padding:30px;border-radius:15px;margin-bottom:40px;text-align:center;}
+.attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;}
 .attendance-btn:disabled{background:gray;cursor:not-allowed;}
 .status-message{margin-top:15px;font-weight:600;}
 .distance-box{margin-top:15px;font-weight:bold;}
 .green{color:#00e676;}
 .red{color:#ff5252;}
-.payment-box{background:#1a1a1a;padding:30px;border-radius:15px;box-shadow:0 0 20px rgba(255,140,0,0.15);margin-bottom:40px;}
+.payment-box{background:#1a1a1a;padding:30px;border-radius:15px;margin-bottom:40px;}
 .payment-box input{padding:12px;width:260px;border-radius:8px;border:none;margin-bottom:15px;background:#222;color:white;}
-.payment-btn{padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;transition:0.3s;}
-.payment-btn:hover{transform:scale(1.05);}
+.payment-btn{padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;}
 table{width:100%;border-collapse:collapse;margin-top:20px;background:#1a1a1a;border-radius:15px;overflow:hidden;}
 th{background:#222;color:#ff8c00;padding:12px;}
 td{padding:12px;border-bottom:1px solid #333;text-align:center;}
-tr:hover{background:#222;}
 </style>
 </head>
 
@@ -47,7 +43,9 @@ tr:hover{background:#222;}
 <div class="attendance-box">
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
 <div id="countdownBox" style="margin-bottom:15px;font-weight:600;">Loading countdown...</div>
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>Mark Attendance</button>
+<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>
+Mark Attendance
+</button>
 <div id="attendanceStatus" class="status-message"></div>
 </div>
 
@@ -83,207 +81,137 @@ tr:hover{background:#222;}
 
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, getDoc } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ==============================
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ======================
    AUTH + BLOCK CHECK
-============================== */
+====================== */
+
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
     window.location.href="index.html";
     return;
   }
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(!snap.exists()){
+  const userSnap = await getDoc(doc(db,"users",user.uid));
+
+  if(!userSnap.exists()){
     window.location.href="index.html";
     return;
   }
 
-  const data = snap.data();
+  const userData = userSnap.data();
 
-  if(data.accountStatus === "blocked"){
+  if(userData.accountStatus === "blocked"){
     showBlockedScreen();
     return;
   }
 
-  startCountdown();
-  startLocationTracking();
-  loadRecords();
+  loadRecords(user.uid);
 });
 
-/* ==============================
+/* ======================
    BLOCK SCREEN
-============================== */
+====================== */
+
 function showBlockedScreen(){
   document.body.innerHTML = `
-  <div style="height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;color:white;font-family:Montserrat;">
+  <div style="height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;color:white;">
     <div style="background:#1a1a1a;padding:50px;border-radius:15px;border:2px solid red;text-align:center;">
       <h2 style="color:#ff5252;">🔒 ACCOUNT BLOCKED</h2>
-      <p>Your account has been blocked due to irresponsible attendance activity.</p>
       <p>Please contact branch Manager to reactivate your account.</p>
       <button id="blockedLogoutBtn" style="margin-top:20px;padding:10px 20px;background:#ff5252;border:none;border-radius:8px;color:white;cursor:pointer;">Logout</button>
     </div>
   </div>`;
 
-  document.getElementById("blockedLogoutBtn").addEventListener("click", async ()=>{
+  document.getElementById("blockedLogoutBtn")
+    .addEventListener("click", async ()=>{
+      await signOut(auth);
+      window.location.href="index.html";
+    });
+}
+
+/* ======================
+   LOGOUT
+====================== */
+
+document.getElementById("logoutBtn")
+  .addEventListener("click", async ()=>{
     await signOut(auth);
     window.location.href="index.html";
-  });
-}
-
-/* ==============================
-   LOGOUT FIX
-============================== */
-document.getElementById("logoutBtn").addEventListener("click", async ()=>{
-  await signOut(auth);
-  window.location.href="index.html";
 });
 
-/* ==============================
-   ORIGINAL ATTENDANCE & ERP CODE
-   (UNCHANGED BELOW)
-============================== */
+/* ======================
+   ADD CUSTOMER (ERP)
+====================== */
 
-const officeLat = 16.236719;
-const officeLon = 80.647476;
-const allowedRadius = 200;
+document.getElementById("paymentForm")
+  .addEventListener("submit", async (e)=>{
+    e.preventDefault();
 
-const btn = document.getElementById("attendanceBtn");
-const statusBox = document.getElementById("attendanceStatus");
-const distanceDisplay = document.getElementById("distanceDisplay");
+    const user = auth.currentUser;
+    if(!user) return;
 
-async function getClosingTime(){
-  const snap = await getDoc(doc(db,"settings","attendance"));
-  if(snap.exists()){
-    return {
-      hour: snap.data().closeHour ?? 10,
-      minute: snap.data().closeMinute ?? 0
-    };
-  }
-  return { hour:10, minute:0 };
-}
+    const customerName = document.getElementById("customerName").value.trim();
+    const executiveName = document.getElementById("executiveName").value.trim();
+    const totalAmount = Number(document.getElementById("totalAmount").value);
 
-async function startCountdown(){
-  const { hour, minute } = await getClosingTime();
-  const box = document.getElementById("countdownBox");
-
-  function update(){
-    const now = new Date();
-    const close = new Date();
-    close.setHours(hour, minute, 0, 0);
-    const diff = close - now;
-
-    if(diff <= 0){
-      box.innerText="Attendance Closed";
-      btn.disabled=true;
+    if(!customerName || !executiveName || !totalAmount){
+      document.getElementById("paymentMessage").innerText = "All fields required.";
       return;
     }
 
-    const h=Math.floor(diff/(1000*60*60));
-    const m=Math.floor((diff%(1000*60*60))/(1000*60));
-    const s=Math.floor((diff%(1000*60))/1000);
+    await addDoc(collection(db,"customerPayments"),{
+      customerName,
+      executiveName,
+      totalAmount,
+      createdBy: user.uid,
+      payments: [],
+      isLocked: false,
+      status: "Pending",
+      createdAt: serverTimestamp()
+    });
 
-    box.innerText=`Closes at ${hour}:${minute.toString().padStart(2,"0")} | ${h}h ${m}m ${s}s`;
-  }
+    document.getElementById("paymentMessage").innerText = "Customer added successfully.";
+    document.getElementById("paymentForm").reset();
 
-  update();
-  setInterval(update,1000);
-}
+    loadRecords(user.uid);
+});
 
-function startLocationTracking(){
-  if(!navigator.geolocation){
-    distanceDisplay.innerText="Geolocation not supported";
-    distanceDisplay.className="distance-box red";
-    return;
-  }
+/* ======================
+   LOAD ERP RECORDS
+====================== */
 
-  navigator.geolocation.watchPosition(
-    (pos)=>{
-      const lat=pos.coords.latitude;
-      const lon=pos.coords.longitude;
-      const distance=calculateDistance(lat,lon,officeLat,officeLon);
+async function loadRecords(uid){
 
-      distanceDisplay.innerText=`Distance from office: ${Math.round(distance)} meters`;
-
-      if(distance<=allowedRadius){
-        distanceDisplay.className="distance-box green";
-        btn.disabled=false;
-        statusBox.innerText="";
-      }else{
-        distanceDisplay.className="distance-box red";
-        btn.disabled=true;
-        statusBox.innerText="You are outside office location";
-      }
-    },
-    ()=>{
-      distanceDisplay.innerText="Location permission denied";
-      distanceDisplay.className="distance-box red";
-      btn.disabled=true;
-    },
-    { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
-  );
-}
-
-window.markAttendance = async function(){
-  const user=auth.currentUser;
-  const today=new Date().toISOString().split("T")[0];
-
-  const q=query(collection(db,"attendance"),
-    where("employeeId","==",user.uid),
-    where("date","==",today)
+  const q = query(
+    collection(db,"customerPayments"),
+    where("createdBy","==",uid)
   );
 
-  const snapshot=await getDocs(q);
-
-  if(!snapshot.empty){
-    statusBox.innerText="Attendance already marked today.";
-    btn.disabled=true;
-    return;
-  }
-
-  await addDoc(collection(db,"attendance"),{
-    employeeId:user.uid,
-    date:today,
-    timestamp:serverTimestamp()
-  });
-
-  statusBox.innerText="Attendance Marked Successfully";
-  btn.disabled=true;
-};
-
-function calculateDistance(lat1, lon1, lat2, lon2){
-  const R=6371e3;
-  const φ1=lat1*Math.PI/180;
-  const φ2=lat2*Math.PI/180;
-  const Δφ=(lat2-lat1)*Math.PI/180;
-  const Δλ=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(Δφ/2)*Math.sin(Δφ/2)+
-          Math.cos(φ1)*Math.cos(φ2)*
-          Math.sin(Δλ/2)*Math.sin(Δλ/2);
-  const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-  return R*c;
-}
-
-async function loadRecords(){
-  const user=auth.currentUser;
-  if(!user) return;
-
-  const q=query(collection(db,"customerPayments"),
-    where("createdBy","==",user.uid)
-  );
-
-  const snapshot=await getDocs(q);
-  const table=document.getElementById("recordsTable");
-  table.innerHTML="";
+  const snapshot = await getDocs(q);
+  const table = document.getElementById("recordsTable");
+  table.innerHTML = "";
 
   snapshot.forEach(docSnap=>{
-    const data=docSnap.data();
-    const payments=data.payments||[];
-    const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
+    const data = docSnap.data();
+    const payments = data.payments || [];
+    const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
 
     table.innerHTML+=`
     <tr>
@@ -296,7 +224,11 @@ async function loadRecords(){
     </tr>`;
   });
 }
+
 </script>
+
+<!-- Attendance System -->
+<script type="module" src="attendance.js"></script>
 
 </body>
 </html>
