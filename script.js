@@ -219,15 +219,24 @@ window.closeGallery = function() {
 };
 
 window.nextImage = function() {
+
+    stopAutoSlide();
+
     currentIndex = (currentIndex + 1) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
+
+    startAutoSlide();
 };
 
 window.prevImage = function() {
+
+    stopAutoSlide();
+
     currentIndex = (currentIndex - 1 + currentGallery.length) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
-};
 
+    startAutoSlide();
+};
 function startAutoSlide() {
     clearInterval(slideInterval);
     slideInterval = setInterval(() => {
@@ -250,4 +259,5 @@ function closeLeadPopup() {
         popup.style.display = "none";
     }
 }
+
 
