@@ -256,20 +256,22 @@ Login
 <!-- PROJECT GALLERY POPUP -->
 <div id="galleryOverlay" class="gallery-overlay">
 
-    <div class="gallery-box">
-        <span class="gallery-close" onclick="closeGallery()">×</span>
+   <div class="gallery-box">
+    <span class="gallery-close" onclick="closeGallery()">×</span>
 
+    <div class="gallery-view">
         <img id="galleryImage" src="" alt="Solar Project">
-
-        <div id="comingSoonText" class="coming-soon-text" style="display:none;">
-            Commercial project images will be updated soon.
-        </div>
-
-        <div class="gallery-controls">
-            <button onclick="prevImage()">❮</button>
-            <button onclick="nextImage()">❯</button>
-        </div>
     </div>
+
+    <div id="comingSoonText" class="coming-soon-text" style="display:none;">
+        Commercial project images will be updated soon.
+    </div>
+
+    <div class="gallery-controls">
+        <button onclick="prevImage()">❮</button>
+        <button onclick="nextImage()">❯</button>
+    </div>
+</div>
 
 </div>
 <!-- SMART LEAD POPUP -->
@@ -338,6 +340,7 @@ z-index:9999;">
     
 </body>
 </html>
+
 
 
 
