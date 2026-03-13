@@ -9,6 +9,7 @@ doc,
 setDoc,
 onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import {
 ref,
 uploadBytes
@@ -16,8 +17,13 @@ uploadBytes
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 
-const popup =
-document.getElementById("verifyPopup");
+let popup = null;
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+popup = document.getElementById("verifyPopup");
+
+});
 
 let userId = "";
 
@@ -266,7 +272,9 @@ playAlert();
 
 window.submitVerify = async function(){
 
+if(popup){
 popup.classList.remove("show");
+}
 
 msg.innerText =
 "Verification Submitted";
@@ -310,6 +318,8 @@ onSnapshot(verifyDoc,(snap)=>{
 if(!snap.exists()) return;
 
 const data = snap.data();
+
+if(!data) return;
 
 if(data.request === true){
 
