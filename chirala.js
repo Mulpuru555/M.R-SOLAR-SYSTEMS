@@ -6,18 +6,13 @@ onAuthStateChanged
 
 import {
 doc,
-setDoc
+setDoc,
+onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 import {
 ref,
 uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-import {
-onSnapshot,
-doc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 
