@@ -18,6 +18,9 @@ uploadBytes
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 
+const popup =
+document.getElementById("verifyPopup");
+
 let userId = "";
 
 
@@ -28,7 +31,7 @@ let userId = "";
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
 
-const maxDistance = 200; // meters
+const maxDistance = 200;
 
 
 /* =========================
@@ -40,6 +43,9 @@ onAuthStateChanged(auth,(user)=>{
 if(user){
 
 userId = user.uid;
+
+document.getElementById("empName").innerText =
+"User : " + user.email;
 
 }else{
 
@@ -103,6 +109,8 @@ return R * c;
 window.markAttendance = async function(){
 
 try{
+
+msg.innerText = "Checking time...";
 
 /* ===== TIME CHECK ===== */
 
@@ -194,10 +202,10 @@ await uploadBytes(selfieRef,selfieFile);
 await uploadBytes(officeRef,officeFile);
 
 
-/* ===== SAVE FIRESTORE ===== */
-
 msg.innerText = "Saving attendance...";
 
+
+/* ===== FIRESTORE ===== */
 
 await setDoc(
 
@@ -227,7 +235,7 @@ time: Date.now()
 
 
 msg.innerText =
-"Attendance Saved Successfully";
+"Attendance Saved Successfully ✅";
 
 
 }catch(e){
@@ -240,3 +248,48 @@ msg.innerText =
 }
 
 };
+
+
+
+/* =========================
+   VERIFY POPUP SUPPORT
+========================= */
+
+
+window.showVerifyPopup = function(){
+
+if(!popup) return;
+
+popup.classList.add("show");
+
+playAlert();
+
+};
+
+
+window.submitVerify = function(){
+
+popup.classList.remove("show");
+
+msg.innerText =
+"Verification Submitted";
+
+};
+
+/* =========================
+   SOUND ALERT
+========================= */
+
+function playAlert(){
+
+try{
+
+const audio = new Audio(
+"https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+);
+
+audio.play();
+
+}catch(e){}
+
+}
