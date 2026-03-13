@@ -269,16 +269,22 @@ playAlert();
 
 };
 
-
-window.submitVerify = function(){
+window.submitVerify = async function(){
 
 popup.classList.remove("show");
 
 msg.innerText =
 "Verification Submitted";
 
-};
 
+await setDoc(
+doc(db,"verificationRequests","chirala"),
+{
+request:false
+}
+);
+
+};
 /* =========================
    SOUND ALERT
 ========================= */
