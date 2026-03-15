@@ -14,23 +14,15 @@
 
 <body>
 
-
-<!-- HEADER -->
-
 <div class="header">
 
 <h2>M.R SOLAR SYSTEMS</h2>
 <p>Chirala Branch Attendance</p>
 
-<button id="logoutBtn" onclick="logoutUser()">
-Logout
-</button>
+<button onclick="logoutUser()">Logout</button>
 
 </div>
 
-
-
-<!-- MAIN CARD -->
 
 <div class="card">
 
@@ -39,78 +31,30 @@ Logout
 <p id="gpsStatus">Checking GPS...</p>
 
 
+<input type="file" id="selfie" accept="image/*" capture="user"><br><br>
 
-<div class="inputBox">
-
-<label>Selfie Photo</label>
-
-<input
-type="file"
-id="selfie"
-accept="image/*"
-capture="user">
-
-</div>
+<input type="file" id="office" accept="image/*" capture="environment"><br><br>
 
 
-
-<div class="inputBox">
-
-<label>Office Photo</label>
-
-<input
-type="file"
-id="office"
-accept="image/*"
-capture="environment">
-
-</div>
-
-
-
-<button
-class="btn"
-onclick="markAttendance()">
-
-Mark Attendance
-
-</button>
-
+<button onclick="markAttendance()">Mark Attendance</button>
 
 <p id="msg"></p>
 
 </div>
 
 
-
-<!-- VERIFY POPUP -->
-
-<div id="verifyPopup" class="popup">
+<div id="verifyPopup" style="display:none">
 
 <h3>Verification Required</h3>
 
-<input
-type="file"
-id="verifyPhoto"
-accept="image/*"
-capture="user">
+<input type="file" id="verifyPhoto" accept="image/*">
 
-<br><br>
-
-<button
-class="btn"
-onclick="submitVerify()">
-
-Submit
-
-</button>
+<button onclick="submitVerify()">Submit</button>
 
 </div>
 
 
-
-<script type="module" src="chirala.js"></script>
+<script type="module" src="./chirala.js"></script>
 
 </body>
-
 </html>
