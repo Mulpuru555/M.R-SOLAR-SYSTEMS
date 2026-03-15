@@ -7,7 +7,8 @@ signOut
 
 import {
 doc,
-setDoc
+setDoc,
+onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -22,7 +23,8 @@ uploadBytes
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 const empName = document.getElementById("empName");
-
+const popup =
+document.getElementById("verifyPopup");
 let userId = "";
 
 
@@ -265,3 +267,72 @@ console.log(e);
 }
 
 };
+// VERIFY LISTENER
+
+const verifyDoc =
+doc(db,"verificationRequests","chirala");
+
+onSnapshot(verifyDoc,(snap)=>{
+
+if(!snap.exists()) return;
+
+const data = snap.data();
+
+if(data.request === true){
+
+popup.classList.add("show");
+
+playSound();
+
+}
+
+});
+window.submitVerify = async function(){
+
+const file =
+document.getElementById("verifyPhoto").files[0];
+
+if(!file){
+
+msg.innerText = "Upload photo";
+return;
+
+}
+
+const date =
+new Date().toISOString().slice(0,10);
+
+const refPath =
+ref(storage,
+"verify/"+date+"/verify_"+userId);
+
+await uploadBytes(refPath,file);
+
+await setDoc(
+doc(db,"verificationRequests","chirala"),
+{
+request:false,
+time:Date.now()
+}
+);
+
+popup.classList.remove("show");
+
+msg.innerText =
+"Verification sent";
+
+};
+function playSound(){
+
+try{
+
+const audio =
+new Audio(
+"https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+);
+
+audio.play();
+
+}catch(e){}
+
+}
