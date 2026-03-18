@@ -1,4 +1,4 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import {
 onAuthStateChanged,
@@ -6,306 +6,333 @@ signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
+collection,
+getDocs,
+query,
+where,
 doc,
-setDoc,
-onSnapshot
+updateDoc,
+getDoc,
+setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-ref,
-uploadBytes
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const attendanceBody =
+document.getElementById("attendanceTable");
+
+const blockedBody =
+document.getElementById("blockedTable");
+
+const summaryBody =
+document.getElementById("summaryTable");
+
+const dateInput =
+document.getElementById("attendanceDate");
 
 
-console.log("chirala.js loaded");
 
+onAuthStateChanged(auth,(user)=>{
 
-window.addEventListener("DOMContentLoaded", () => {
-
-const msg = document.getElementById("msg");
-const gpsStatus = document.getElementById("gpsStatus");
-const empName = document.getElementById("empName");
-const popup = document.getElementById("verifyPopup");
-
-let userId = "";
-
-
-/* ================= OFFICE LOCATION ================= */
-
-const officeLat = 15.829398363781864;
-const officeLng = 80.35605609999999;
-const maxDistance = 200;
-
-
-/* ================= LOGIN CHECK ================= */
-
-onAuthStateChanged(auth, (user) => {
-
-if (!user) {
-
-window.location.href = "index.html";
-return;
-
+if(!user){
+window.location.href="index.html";
 }
-
-userId = user.uid;
-
-if (empName)
-empName.innerText = "Logged in : " + user.email;
-
-checkGPS();
 
 });
 
 
-/* ================= LOGOUT ================= */
-
-window.logoutUser = async function () {
-
-try {
+window.logoutUser = async function(){
 
 await signOut(auth);
-window.location.href = "index.html";
-
-} catch (e) {
-
-console.log(e);
-
-}
+window.location.href="index.html";
 
 };
 
 
-/* ================= GPS ================= */
 
-function getGPS() {
+function getLocalDateString(dateObj){
 
-return new Promise((resolve, reject) => {
+return dateObj.getFullYear()+"-"+
 
-if (!navigator.geolocation) {
+String(dateObj.getMonth()+1).padStart(2,"0")+"-"+
 
-reject("No GPS");
-return;
+String(dateObj.getDate()).padStart(2,"0");
 
 }
 
-navigator.geolocation.getCurrentPosition(
 
-pos => resolve(pos.coords),
+const today =
+getLocalDateString(new Date());
 
-err => reject(err),
+dateInput.value=today;
 
-{
-enableHighAccuracy: true,
-timeout: 15000,
-maximumAge: 0
-}
 
+
+async function isHoliday(date){
+
+const d=new Date(date);
+
+if(d.getDay()==0) return true;
+
+const snap=await getDoc(
+doc(db,"settings","holidays","holidayList",date)
 );
+
+return snap.exists();
+
+}
+
+
+
+/* ATTENDANCE */
+
+async function loadAttendance(date){
+
+attendanceBody.innerHTML="";
+
+const holiday=await isHoliday(date);
+
+const usersSnapshot=await getDocs(
+query(collection(db,"users"),
+where("role","==","employee"))
+);
+
+const attendanceSnapshot=
+await getDocs(collection(db,"attendance"));
+
+const map={};
+
+attendanceSnapshot.forEach(docSnap=>{
+
+const data=docSnap.data();
+
+if(data.date===date){
+map[data.employeeId]=data;
+}
+
+});
+
+
+usersSnapshot.forEach(docSnap=>{
+
+const user=docSnap.data();
+
+let status;
+let time="-";
+
+if(holiday){
+
+status="<span class='holiday'>Holiday</span>";
+
+}
+else if(map[docSnap.id]){
+
+status="<span class='present'>Present</span>";
+
+const t=map[docSnap.id].timestamp;
+
+if(t?.seconds){
+
+time=new Date(
+t.seconds*1000
+).toLocaleTimeString("en-IN");
+
+}
+
+}
+else{
+
+status="<span class='absent'>Absent</span>";
+
+}
+
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+
+<td>${user.name}</td>
+
+<td>${status}</td>
+
+<td>${time}</td>
+
+`;
+
+attendanceBody.appendChild(row);
+
+});
+
+
+}
+
+
+
+/* SUMMARY */
+
+async function loadSummary(){
+
+summaryBody.innerHTML="";
+
+const usersSnapshot=await getDocs(
+query(collection(db,"users"),
+where("role","==","employee"))
+);
+
+const attendanceSnapshot=
+await getDocs(collection(db,"attendance"));
+
+const todayDate=new Date();
+
+const start=new Date(
+todayDate.getFullYear(),
+todayDate.getMonth(),
+1
+);
+
+let workingDays=0;
+
+for(
+let d=new Date(start);
+d<=todayDate;
+d.setDate(d.getDate()+1)
+){
+
+if(d.getDay()==0) continue;
+
+workingDays++;
+
+}
+
+
+const presentMap={};
+
+attendanceSnapshot.forEach(docSnap=>{
+
+const data=docSnap.data();
+
+presentMap[data.employeeId] =
+(presentMap[data.employeeId]||0)+1;
+
+});
+
+
+usersSnapshot.forEach(docSnap=>{
+
+const user=docSnap.data();
+
+const present=
+presentMap[docSnap.id]||0;
+
+const absent=
+workingDays-present;
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+
+<td>${user.name}</td>
+
+<td>${workingDays}</td>
+
+<td>${present}</td>
+
+<td>${absent}</td>
+
+`;
+
+summaryBody.appendChild(row);
 
 });
 
 }
 
 
-/* ================= DISTANCE ================= */
 
-function getDistance(lat1, lon1, lat2, lon2) {
+/* BLOCKED */
 
-const R = 6371000;
+async function loadBlocked(){
 
-const dLat = (lat2 - lat1) * Math.PI / 180;
-const dLon = (lon2 - lon1) * Math.PI / 180;
+blockedBody.innerHTML="";
 
-const a =
-Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-Math.cos(lat1 * Math.PI / 180) *
-Math.cos(lat2 * Math.PI / 180) *
-Math.sin(dLon / 2) *
-Math.sin(dLon / 2);
-
-const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-return R * c;
-
-}
-
-
-/* ================= CHECK GPS ================= */
-
-async function checkGPS() {
-
-if (!gpsStatus) return;
-
-gpsStatus.innerText = "Checking GPS...";
-
-try {
-
-const coords = await getGPS();
-
-const dist = getDistance(
-coords.latitude,
-coords.longitude,
-officeLat,
-officeLng
+const snapshot=await getDocs(
+query(collection(db,"users"),
+where("accountStatus","==","blocked"))
 );
 
-gpsStatus.innerText =
-"Distance : " + Math.round(dist) + " m";
+snapshot.forEach(docSnap=>{
 
-} catch (e) {
+const user=docSnap.data();
 
-gpsStatus.innerText = "Location not allowed";
+const row=document.createElement("tr");
 
+row.innerHTML=`
+
+<td>${user.name}</td>
+<td>${user.branch}</td>
+<td>${user.blockReason}</td>
+<td>${user.lastAbsentDate}</td>
+<td>
+
+<button data-id="${docSnap.id}">
+Unblock
+</button>
+
+</td>
+
+`;
+
+blockedBody.appendChild(row);
+
+});
+
+
+document.querySelectorAll("button[data-id]")
+.forEach(btn=>{
+
+btn.onclick=async()=>{
+
+await updateDoc(
+doc(db,"users",
+btn.dataset.id),
+{
+accountStatus:"active",
+absenceCount:0
 }
-
-}
-
-
-/* ================= ATTENDANCE ================= */
-
-window.markAttendance = async function () {
-
-try {
-
-msg.innerText = "Checking...";
-
-const now = new Date();
-
-if (now.getHours() >= 10) {
-
-msg.innerText = "Allowed before 10 AM";
-return;
-
-}
-
-
-const coords = await getGPS();
-
-const dist = getDistance(
-coords.latitude,
-coords.longitude,
-officeLat,
-officeLng
 );
 
-if (dist > maxDistance) {
+loadBlocked();
 
-msg.innerText = "Not in office range";
-return;
+};
 
-}
-
-
-const selfie =
-document.getElementById("selfie").files[0];
-
-const office =
-document.getElementById("office").files[0];
-
-if (!selfie || !office) {
-
-msg.innerText = "Upload photos";
-return;
+});
 
 }
 
 
-const date =
-new Date().toISOString().slice(0, 10);
 
+/* VERIFY */
 
-/* upload */
-
-await uploadBytes(
-ref(storage, "chirala/" + date + "/selfie_" + userId),
-selfie
-);
-
-await uploadBytes(
-ref(storage, "chirala/" + date + "/office_" + userId),
-office
-);
-
-
-/* save */
+window.sendVerify = async function(){
 
 await setDoc(
-doc(db, "chiralaAttendance", date + "_" + userId),
+doc(db,"verificationRequests","chirala"),
 {
-userId,
-time: Date.now()
+request:true
 }
 );
 
-msg.innerText = "Attendance Saved ✅";
-
-} catch (e) {
-
-console.log(e);
-msg.innerText = "Error ❌";
-
-}
+alert("Verification sent");
 
 };
 
 
-/* ================= VERIFY LISTENER ================= */
 
-const verifyDoc =
-doc(db, "verificationRequests", "chirala");
-
-
-onSnapshot(verifyDoc, (snap) => {
-
-if (!snap.exists()) return;
-
-const data = snap.data();
-
-if (data && data.request === true) {
-
-if (popup)
-popup.classList.add("show");
-
-}
-
-});
-
-
-/* ================= VERIFY SUBMIT ================= */
-
-window.submitVerify = async function () {
-
-try {
-
-const file =
-document.getElementById("verifyPhoto").files[0];
-
-if (!file) return;
-
-const date =
-new Date().toISOString().slice(0, 10);
-
-await uploadBytes(
-ref(storage, "verify/" + date + "/" + userId),
-file
+dateInput.addEventListener(
+"change",
+()=>loadAttendance(dateInput.value)
 );
 
-await setDoc(
-doc(db, "verificationRequests", "chirala"),
-{ request: false }
-);
 
-if (popup)
-popup.classList.remove("show");
-
-} catch (e) {
-
-console.log(e);
-
-}
-
-};
-
-
-});
+loadAttendance(today);
+loadSummary();
+loadBlocked();
