@@ -3,7 +3,8 @@ import { auth, db } from "./firebase-config.js";
 import {
 onAuthStateChanged,
 signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 collection,
@@ -12,8 +13,12 @@ query,
 where,
 doc,
 updateDoc,
-getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+getDoc,
+setDoc,
+onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 const attendanceBody =
 document.getElementById("attendanceTable");
@@ -27,35 +32,49 @@ document.getElementById("summaryTable");
 const dateInput =
 document.getElementById("attendanceDate");
 
-onAuthStateChanged(auth,(user)=>{
+const verifyText =
+document.getElementById("verifyStatus");
 
-if(!user){
+
+
+/* ================= LOGIN ================= */
+
+onAuthStateChanged(auth,user=>{
+
+if(!user)
 window.location.href="index.html";
-}
 
 });
 
-window.logoutUser = async function(){
+
+window.logoutUser=async()=>{
 
 await signOut(auth);
 window.location.href="index.html";
 
 };
 
-function getLocalDateString(dateObj){
 
-return dateObj.getFullYear()+"-"+
 
-String(dateObj.getMonth()+1).padStart(2,"0")+"-"+
+/* ================= DATE ================= */
 
-String(dateObj.getDate()).padStart(2,"0");
+function getDate(){
+
+const d=new Date();
+
+return d.getFullYear()+"-"+
+String(d.getMonth()+1).padStart(2,"0")+"-"+
+String(d.getDate()).padStart(2,"0");
 
 }
 
-const today =
-getLocalDateString(new Date());
+const today=getDate();
 
 dateInput.value=today;
+
+
+
+/* ================= HOLIDAY ================= */
 
 async function isHoliday(date){
 
@@ -71,51 +90,87 @@ return snap.exists();
 
 }
 
+
+
+/* ================= VERIFY STATUS ================= */
+
+onSnapshot(
+doc(db,"verificationRequests","chirala"),
+snap=>{
+
+if(!snap.exists()) return;
+
+const data=snap.data();
+
+verifyText.innerText =
+"Status : "+data.status;
+
+}
+);
+
+
+window.sendVerify=async()=>{
+
+await setDoc(
+doc(db,"verificationRequests","chirala"),
+{
+request:true,
+status:"pending"
+}
+);
+
+alert("Verification sent successfully");
+
+};
+
+
+
 /* ================= ATTENDANCE REPORT ================= */
 
 async function loadAttendance(date){
 
 attendanceBody.innerHTML="";
 
-const holiday=await isHoliday(date);
-
-const usersSnapshot=await getDocs(
-query(collection(db,"users"),
-where("role","==","employee"))
+const users=await getDocs(
+query(
+collection(db,"users"),
+where("role","==","employee")
+)
 );
 
-const attendanceSnapshot=
-await getDocs(collection(db,"attendance"));
+const att=await getDocs(
+collection(db,"attendance")
+);
 
 const map={};
 
-attendanceSnapshot.forEach(docSnap=>{
+att.forEach(d=>{
 
-const data=docSnap.data();
+const data=d.data();
 
-if(data.date===date){
+if(
+data.date===date ||
+data.date===date.replaceAll("-","/") ||
+data.date.includes(date)
+){
 map[data.employeeId]=data;
 }
 
 });
 
-usersSnapshot.forEach(docSnap=>{
 
-const user=docSnap.data();
+users.forEach(u=>{
 
-let status;
+const user=u.data();
+
+let status="Absent";
 let time="-";
 
-if(holiday){
+if(map[u.id]){
 
-status="<span class='holiday'>Holiday</span>";
+status="Present";
 
-}
-else if(map[docSnap.id]){
-
-status="<span class='present'>Present</span>";
-
-const t=map[docSnap.id].timestamp;
+const t=map[u.id].timestamp;
 
 if(t?.seconds){
 
@@ -126,23 +181,14 @@ t.seconds*1000
 }
 
 }
-else{
-
-status="<span class='absent'>Absent</span>";
-
-}
 
 const row=document.createElement("tr");
 
-row.innerHTML=`
+row.innerHTML=
 
-<td>${user.name}</td>
-
+`<td>${user.name}</td>
 <td>${status}</td>
-
-<td>${time}</td>
-
-`;
+<td>${time}</td>`;
 
 attendanceBody.appendChild(row);
 
@@ -150,76 +196,92 @@ attendanceBody.appendChild(row);
 
 }
 
-/* ================= SUMMARY ================= */
+
+
+/* ================= SUMMARY (MONTH FIXED) ================= */
 
 async function loadSummary(){
 
 summaryBody.innerHTML="";
 
-const usersSnapshot=await getDocs(
-query(collection(db,"users"),
-where("role","==","employee"))
+const users=await getDocs(
+query(
+collection(db,"users"),
+where("role","==","employee")
+)
 );
 
-const attendanceSnapshot=
-await getDocs(collection(db,"attendance"));
-
-const todayDate=new Date();
-
-const start=new Date(
-todayDate.getFullYear(),
-todayDate.getMonth(),
-1
+const att=await getDocs(
+collection(db,"attendance")
 );
+
+
+const now=new Date();
+
+const year=now.getFullYear();
+const month=now.getMonth()+1;
+
 
 let workingDays=0;
 
-for(
-let d=new Date(start);
-d<=todayDate;
-d.setDate(d.getDate()+1)
-){
+for(let d=1; d<=31; d++){
 
-if(d.getDay()==0) continue;
+const date=
+year+"-"+
+String(month).padStart(2,"0")+"-"+
+String(d).padStart(2,"0");
+
+const day=new Date(date);
+
+if(day.getMonth()+1!==month) break;
+
+if(day.getDay()===0) continue;
 
 workingDays++;
 
 }
 
+
 const presentMap={};
 
-attendanceSnapshot.forEach(docSnap=>{
+att.forEach(docSnap=>{
 
 const data=docSnap.data();
 
-presentMap[data.employeeId] =
+if(!data.date) return;
+
+if(
+data.date.startsWith(
+year+"-"+String(month).padStart(2,"0")
+)
+){
+
+presentMap[data.employeeId]=
 (presentMap[data.employeeId]||0)+1;
+
+}
 
 });
 
-usersSnapshot.forEach(docSnap=>{
 
-const user=docSnap.data();
+users.forEach(u=>{
+
+const user=u.data();
 
 const present=
-presentMap[docSnap.id]||0;
+presentMap[u.id]||0;
 
 const absent=
 workingDays-present;
 
 const row=document.createElement("tr");
 
-row.innerHTML=`
+row.innerHTML=
 
-<td>${user.name}</td>
-
+`<td>${user.name}</td>
 <td>${workingDays}</td>
-
 <td>${present}</td>
-
-<td>${absent}</td>
-
-`;
+<td>${absent}</td>`;
 
 summaryBody.appendChild(row);
 
@@ -227,53 +289,53 @@ summaryBody.appendChild(row);
 
 }
 
+
+
 /* ================= BLOCKED ================= */
 
 async function loadBlocked(){
 
 blockedBody.innerHTML="";
 
-const snapshot=await getDocs(
-query(collection(db,"users"),
-where("accountStatus","==","blocked"))
+const snap=await getDocs(
+query(
+collection(db,"users"),
+where("accountStatus","==","blocked")
+)
 );
 
-snapshot.forEach(docSnap=>{
+snap.forEach(d=>{
 
-const user=docSnap.data();
+const user=d.data();
 
 const row=document.createElement("tr");
 
-row.innerHTML=`
+row.innerHTML=
 
-<td>${user.name}</td>
+`<td>${user.name}</td>
 <td>${user.branch}</td>
 <td>${user.blockReason}</td>
-<td>${user.lastAbsentDate}</td>
 <td>
 
-<button data-id="${docSnap.id}">
-
+<button data-id="${d.id}">
 Unblock
-
 </button>
 
-</td>
-
-`;
+</td>`;
 
 blockedBody.appendChild(row);
 
 });
 
-document.querySelectorAll("button[data-id]")
+
+document
+.querySelectorAll("button[data-id]")
 .forEach(btn=>{
 
 btn.onclick=async()=>{
 
 await updateDoc(
-doc(db,"users",
-btn.dataset.id),
+doc(db,"users",btn.dataset.id),
 {
 accountStatus:"active",
 absenceCount:0
@@ -288,13 +350,15 @@ loadBlocked();
 
 }
 
+
+
+/* ================= LOAD ================= */
+
 dateInput.addEventListener(
 "change",
 ()=>loadAttendance(dateInput.value)
 );
 
 loadAttendance(today);
-
 loadSummary();
-
 loadBlocked();
