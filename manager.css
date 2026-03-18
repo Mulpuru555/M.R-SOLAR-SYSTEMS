@@ -16,6 +16,7 @@ justify-content:space-between;
 background:orange;
 border:none;
 padding:8px 12px;
+cursor:pointer;
 }
 
 .container{
@@ -53,4 +54,11 @@ color:#ff5252;
 
 .holiday{
 color:yellow;
+}
+
+button{
+background:orange;
+border:none;
+padding:8px 12px;
+cursor:pointer;
 }
