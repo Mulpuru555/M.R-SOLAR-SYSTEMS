@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Manager Dashboard</title>
+
+<link rel="stylesheet" href="manager.css">
+
+</head>
+
+<body>
+
+
+<div class="header">
+
+<h2>M.R Solar Systems Manager</h2>
+
+<button class="logout" onclick="logoutUser()">
+Logout
+</button>
+
+</div>
+
+
+
+<div class="container">
+
+
+<h1>Attendance Report</h1>
+
+<input type="date" id="attendanceDate">
+
+
+<div class="box">
+
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Status</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody id="attendanceTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<h1>Chirala Control</h1>
+
+<div class="box">
+
+<button onclick="sendVerify()">
+Send Verification To Chirala
+</button>
+
+</div>
+
+
+
+<h1>Employee Summary</h1>
+
+<div class="box">
+
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Working Days</th>
+<th>Present</th>
+<th>Absent</th>
+</tr>
+</thead>
+
+<tbody id="summaryTable"></tbody>
+
+</table>
+
+</div>
+
+
+
+<h1>Blocked Employees</h1>
+
+<div class="box">
+
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Branch</th>
+<th>Reason</th>
+<th>Date</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="blockedTable"></tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+
+<script type="module" src="manager.js"></script>
+
+</body>
+</html>
