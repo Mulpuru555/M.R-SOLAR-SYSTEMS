@@ -17,10 +17,8 @@ uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
-console.log("chirala.js loaded");
+console.log("JS running");
 
-
-// ELEMENTS
 
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
@@ -29,9 +27,6 @@ const popup = document.getElementById("verifyPopup");
 
 let userId = "";
 
-
-// OFFICE LOCATION
-
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
 
@@ -39,21 +34,20 @@ const maxDistance = 200;
 
 
 
-// LOGIN CHECK
+// LOGIN
 
 onAuthStateChanged(auth,(user)=>{
 
 if(!user){
 
-window.location.href = "index.html";
+window.location.href="index.html";
 return;
 
 }
 
-userId = user.uid;
+userId=user.uid;
 
-empName.innerText =
-"Logged in : " + user.email;
+empName.innerText=user.email;
 
 checkGPS();
 
@@ -67,7 +61,7 @@ window.logoutUser = async function(){
 
 await signOut(auth);
 
-window.location.href = "index.html";
+window.location.href="index.html";
 
 };
 
@@ -79,23 +73,15 @@ function getGPS(){
 
 return new Promise((resolve,reject)=>{
 
-if(!navigator.geolocation){
-
-reject("no gps");
-return;
-
-}
-
 navigator.geolocation.getCurrentPosition(
 
-pos => resolve(pos.coords),
+pos=>resolve(pos.coords),
 
-err => reject(err),
+err=>reject(err),
 
 {
 enableHighAccuracy:true,
-timeout:10000,
-maximumAge:0
+timeout:10000
 }
 
 );
@@ -106,54 +92,47 @@ maximumAge:0
 
 
 
-// DISTANCE
+function getDistance(lat1,lon1,lat2,lon2){
 
-function getDistance(lat1, lon1, lat2, lon2){
+const R=6371000;
 
-const R = 6371000;
+const dLat=(lat2-lat1)*Math.PI/180;
+const dLon=(lon2-lon1)*Math.PI/180;
 
-const dLat = (lat2-lat1) * Math.PI/180;
-const dLon = (lon2-lon1) * Math.PI/180;
+const a=
+Math.sin(dLat/2)**2+
+Math.cos(lat1*Math.PI/180)*
+Math.cos(lat2*Math.PI/180)*
+Math.sin(dLon/2)**2;
 
-const a =
-Math.sin(dLat/2) * Math.sin(dLat/2) +
-Math.cos(lat1*Math.PI/180) *
-Math.cos(lat2*Math.PI/180) *
-Math.sin(dLon/2) *
-Math.sin(dLon/2);
+const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 
-const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-return R * c;
+return R*c;
 
 }
 
 
 
-// CHECK GPS
-
 async function checkGPS(){
 
-gpsStatus.innerText = "Checking GPS...";
+gpsStatus.innerText="Checking GPS";
 
 try{
 
-const coords = await getGPS();
+const c=await getGPS();
 
-const distance = getDistance(
-coords.latitude,
-coords.longitude,
+const d=getDistance(
+c.latitude,
+c.longitude,
 officeLat,
 officeLng
 );
 
-gpsStatus.innerText =
-"Distance : " + Math.round(distance) + " m";
+gpsStatus.innerText="Distance "+Math.round(d)+" m";
 
-}catch(e){
+}catch{
 
-gpsStatus.innerText =
-"Location not allowed";
+gpsStatus.innerText="GPS error";
 
 }
 
@@ -161,122 +140,73 @@ gpsStatus.innerText =
 
 
 
-// MARK ATTENDANCE
+// ATTENDANCE
 
 window.markAttendance = async function(){
 
 try{
 
-msg.innerText = "Checking time...";
+const now=new Date();
 
+if(now.getHours()>=10){
 
-// TIME
-
-const now = new Date();
-const hour = now.getHours();
-
-if(hour >= 10){
-
-msg.innerText =
-"Allowed before 10 AM";
-
+msg.innerText="Only before 10 AM";
 return;
 
 }
 
+const coords=await getGPS();
 
-// GPS
-
-msg.innerText = "Checking GPS...";
-
-const coords = await getGPS();
-
-const distance = getDistance(
+const dist=getDistance(
 coords.latitude,
 coords.longitude,
 officeLat,
 officeLng
 );
 
-if(distance > maxDistance){
+if(dist>maxDistance){
 
-msg.innerText =
-"Not in office";
-
+msg.innerText="Not in office";
 return;
 
 }
 
+const selfie=document.getElementById("selfie").files[0];
+const office=document.getElementById("office").files[0];
 
-// FILES
+if(!selfie||!office){
 
-const selfieFile =
-document.getElementById("selfie").files[0];
-
-const officeFile =
-document.getElementById("office").files[0];
-
-if(!selfieFile || !officeFile){
-
-msg.innerText =
-"Upload photos";
-
+msg.innerText="Upload photos";
 return;
 
 }
 
+const date=new Date().toISOString().slice(0,10);
 
-const date =
-new Date().toISOString().slice(0,10);
+await uploadBytes(
+ref(storage,"chirala/"+date+"/s_"+userId),
+selfie
+);
 
-
-msg.innerText = "Uploading...";
-
-
-// STORAGE
-
-const selfieRef =
-ref(storage,
-"chirala/"+date+"/selfie_"+userId);
-
-const officeRef =
-ref(storage,
-"chirala/"+date+"/office_"+userId);
-
-
-await uploadBytes(selfieRef,selfieFile);
-await uploadBytes(officeRef,officeFile);
-
-
-// FIRESTORE
+await uploadBytes(
+ref(storage,"chirala/"+date+"/o_"+userId),
+office
+);
 
 await setDoc(
-doc(db,"chiralaAttendance",
-date+"_"+userId),
+doc(db,"chiralaAttendance",date+"_"+userId),
 {
-
 userId,
-
-gpsLat: coords.latitude,
-gpsLng: coords.longitude,
-
-distance,
-
-time: Date.now()
-
+time:Date.now()
 }
 );
 
-
-msg.innerText =
-"Attendance Saved ✅";
+msg.innerText="Saved";
 
 }catch(e){
 
 console.log(e);
-
-msg.innerText =
-"Error";
+msg.innerText="Error";
 
 }
 
@@ -286,27 +216,17 @@ msg.innerText =
 
 // VERIFY LISTENER
 
-const verifyDoc =
-doc(db,"verificationRequests","chirala");
-
+const verifyDoc=doc(db,"verificationRequests","chirala");
 
 onSnapshot(verifyDoc,(snap)=>{
 
 if(!snap.exists()) return;
 
-const data = snap.data();
+const data=snap.data();
 
-if(!data) return;
+if(data.request){
 
-if(data.request === true){
-
-if(popup){
-
-popup.classList.add("show");
-
-playSound();
-
-}
+popup.style.display="block";
 
 }
 
@@ -316,69 +236,24 @@ playSound();
 
 // SUBMIT VERIFY
 
-window.submitVerify = async function(){
+window.submitVerify=async function(){
 
-try{
+const file=document.getElementById("verifyPhoto").files[0];
 
-const file =
-document.getElementById("verifyPhoto").files[0];
+if(!file) return;
 
-if(!file){
+const date=new Date().toISOString().slice(0,10);
 
-msg.innerText =
-"Upload verify photo";
-
-return;
-
-}
-
-const date =
-new Date().toISOString().slice(0,10);
-
-const verifyRef =
-ref(storage,
-"verify/"+date+"/verify_"+userId);
-
-await uploadBytes(verifyRef,file);
-
+await uploadBytes(
+ref(storage,"verify/"+date+"/"+userId),
+file
+);
 
 await setDoc(
 doc(db,"verificationRequests","chirala"),
-{
-request:false,
-time:Date.now()
-}
+{request:false}
 );
 
-
-popup.classList.remove("show");
-
-msg.innerText =
-"Verified";
-
-}catch(e){
-
-console.log(e);
-
-}
+popup.style.display="none";
 
 };
-
-
-
-// SOUND
-
-function playSound(){
-
-try{
-
-const audio =
-new Audio(
-"https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-);
-
-audio.play();
-
-}catch(e){}
-
-}
