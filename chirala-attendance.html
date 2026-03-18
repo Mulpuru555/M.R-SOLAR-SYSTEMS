@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Chirala Attendance</title>
@@ -14,15 +15,28 @@
 
 <body>
 
-<div class="header">
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div>
 
 <h2>M.R SOLAR SYSTEMS</h2>
-<p>Chirala Branch Attendance</p>
 
-<button onclick="logoutUser()">Logout</button>
+<span>Chirala Branch</span>
 
 </div>
 
+<button id="logoutBtn" onclick="logoutUser()">
+Logout
+</button>
+
+</div>
+
+
+
+<!-- CARD -->
 
 <div class="card">
 
@@ -31,30 +45,74 @@
 <p id="gpsStatus">Checking GPS...</p>
 
 
-<input type="file" id="selfie" accept="image/*" capture="user"><br><br>
+<div class="inputBox">
 
-<input type="file" id="office" accept="image/*" capture="environment"><br><br>
+<label>Selfie</label>
+
+<input type="file"
+id="selfie"
+accept="image/*"
+capture="user">
+
+</div>
 
 
-<button onclick="markAttendance()">Mark Attendance</button>
+<div class="inputBox">
+
+<label>Office Photo</label>
+
+<input type="file"
+id="office"
+accept="image/*"
+capture="environment">
+
+</div>
+
+
+<button
+class="btn"
+onclick="markAttendance()">
+
+Mark Attendance
+
+</button>
+
 
 <p id="msg"></p>
 
 </div>
 
 
-<div id="verifyPopup" style="display:none">
+
+<!-- POPUP -->
+
+<div id="verifyPopup" class="popup">
 
 <h3>Verification Required</h3>
 
-<input type="file" id="verifyPhoto" accept="image/*">
+<input
+type="file"
+id="verifyPhoto"
+accept="image/*">
 
-<button onclick="submitVerify()">Submit</button>
+<button
+class="btn"
+onclick="submitVerify()">
+
+Submit
+
+</button>
 
 </div>
 
 
-<script type="module" src="./chirala.js"></script>
+
+<script
+type="module"
+src="./chirala.js">
+
+</script>
 
 </body>
+
 </html>
