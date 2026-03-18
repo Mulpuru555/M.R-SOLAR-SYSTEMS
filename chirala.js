@@ -20,10 +20,7 @@ uploadBytes
 console.log("chirala.js loaded");
 
 
-// wait until page loaded
-
-window.addEventListener("DOMContentLoaded",()=>{
-
+window.addEventListener("DOMContentLoaded", () => {
 
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
@@ -33,70 +30,75 @@ const popup = document.getElementById("verifyPopup");
 let userId = "";
 
 
+/* ================= OFFICE LOCATION ================= */
+
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
-
 const maxDistance = 200;
 
 
+/* ================= LOGIN CHECK ================= */
 
-// LOGIN CHECK
+onAuthStateChanged(auth, (user) => {
 
-onAuthStateChanged(auth,(user)=>{
+if (!user) {
 
-if(!user){
-
-window.location.href="index.html";
+window.location.href = "index.html";
 return;
 
 }
 
-userId=user.uid;
+userId = user.uid;
 
-if(empName)
-empName.innerText="Logged in : "+user.email;
+if (empName)
+empName.innerText = "Logged in : " + user.email;
 
 checkGPS();
 
 });
 
 
+/* ================= LOGOUT ================= */
 
-// LOGOUT
+window.logoutUser = async function () {
 
-window.logoutUser = async function(){
+try {
 
 await signOut(auth);
+window.location.href = "index.html";
 
-window.location.href="index.html";
+} catch (e) {
+
+console.log(e);
+
+}
 
 };
 
 
+/* ================= GPS ================= */
 
-// GPS
+function getGPS() {
 
-function getGPS(){
+return new Promise((resolve, reject) => {
 
-return new Promise((resolve,reject)=>{
+if (!navigator.geolocation) {
 
-if(!navigator.geolocation){
-
-reject();
+reject("No GPS");
 return;
 
 }
 
 navigator.geolocation.getCurrentPosition(
 
-pos=>resolve(pos.coords),
+pos => resolve(pos.coords),
 
-err=>reject(err),
+err => reject(err),
 
 {
-enableHighAccuracy:true,
-timeout:10000,
-maximumAge:0
+enableHighAccuracy: true,
+timeout: 15000,
+maximumAge: 0
 }
 
 );
@@ -106,204 +108,198 @@ maximumAge:0
 }
 
 
+/* ================= DISTANCE ================= */
 
-// DISTANCE
+function getDistance(lat1, lon1, lat2, lon2) {
 
-function getDistance(lat1, lon1, lat2, lon2){
+const R = 6371000;
 
-const R=6371000;
+const dLat = (lat2 - lat1) * Math.PI / 180;
+const dLon = (lon2 - lon1) * Math.PI / 180;
 
-const dLat=(lat2-lat1)*Math.PI/180;
-const dLon=(lon2-lon1)*Math.PI/180;
+const a =
+Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+Math.cos(lat1 * Math.PI / 180) *
+Math.cos(lat2 * Math.PI / 180) *
+Math.sin(dLon / 2) *
+Math.sin(dLon / 2);
 
-const a=
-Math.sin(dLat/2)*Math.sin(dLat/2)+
-Math.cos(lat1*Math.PI/180)*
-Math.cos(lat2*Math.PI/180)*
-Math.sin(dLon/2)*
-Math.sin(dLon/2);
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-
-return R*c;
+return R * c;
 
 }
 
 
+/* ================= CHECK GPS ================= */
 
-// CHECK GPS
+async function checkGPS() {
 
-async function checkGPS(){
+if (!gpsStatus) return;
 
-if(!gpsStatus) return;
+gpsStatus.innerText = "Checking GPS...";
 
-gpsStatus.innerText="Checking GPS...";
+try {
 
-try{
+const coords = await getGPS();
 
-const coords=await getGPS();
-
-const dist=getDistance(
+const dist = getDistance(
 coords.latitude,
 coords.longitude,
 officeLat,
 officeLng
 );
 
-gpsStatus.innerText=
-"Distance : "+Math.round(dist)+" m";
+gpsStatus.innerText =
+"Distance : " + Math.round(dist) + " m";
 
-}catch{
+} catch (e) {
 
-gpsStatus.innerText="Location not allowed";
-
-}
+gpsStatus.innerText = "Location not allowed";
 
 }
 
+}
 
 
-// ATTENDANCE
+/* ================= ATTENDANCE ================= */
 
-window.markAttendance = async function(){
+window.markAttendance = async function () {
 
-try{
+try {
 
-msg.innerText="Checking time...";
+msg.innerText = "Checking...";
 
-const now=new Date();
+const now = new Date();
 
-if(now.getHours()>=10){
+if (now.getHours() >= 10) {
 
-msg.innerText="Allowed before 10 AM";
+msg.innerText = "Allowed before 10 AM";
 return;
 
 }
 
 
-const coords=await getGPS();
+const coords = await getGPS();
 
-const dist=getDistance(
+const dist = getDistance(
 coords.latitude,
 coords.longitude,
 officeLat,
 officeLng
 );
 
-if(dist>maxDistance){
+if (dist > maxDistance) {
 
-msg.innerText="Not in office";
+msg.innerText = "Not in office range";
 return;
 
 }
 
 
-const selfie=
+const selfie =
 document.getElementById("selfie").files[0];
 
-const office=
+const office =
 document.getElementById("office").files[0];
 
-if(!selfie||!office){
+if (!selfie || !office) {
 
-msg.innerText="Upload photos";
+msg.innerText = "Upload photos";
 return;
 
 }
 
 
-const date=
-new Date().toISOString().slice(0,10);
+const date =
+new Date().toISOString().slice(0, 10);
 
+
+/* upload */
 
 await uploadBytes(
-ref(storage,"chirala/"+date+"/selfie_"+userId),
+ref(storage, "chirala/" + date + "/selfie_" + userId),
 selfie
 );
 
 await uploadBytes(
-ref(storage,"chirala/"+date+"/office_"+userId),
+ref(storage, "chirala/" + date + "/office_" + userId),
 office
 );
 
 
+/* save */
+
 await setDoc(
-doc(db,"chiralaAttendance",
-date+"_"+userId),
+doc(db, "chiralaAttendance", date + "_" + userId),
 {
 userId,
-time:Date.now()
+time: Date.now()
 }
 );
 
+msg.innerText = "Attendance Saved ✅";
 
-msg.innerText="Attendance Saved";
-
-}catch(e){
+} catch (e) {
 
 console.log(e);
-msg.innerText="Error";
+msg.innerText = "Error ❌";
 
 }
 
 };
 
 
+/* ================= VERIFY LISTENER ================= */
 
-// VERIFY LISTENER
-
-const verifyDoc=
-doc(db,"verificationRequests","chirala");
+const verifyDoc =
+doc(db, "verificationRequests", "chirala");
 
 
-onSnapshot(verifyDoc,(snap)=>{
+onSnapshot(verifyDoc, (snap) => {
 
-if(!snap.exists()) return;
+if (!snap.exists()) return;
 
-const data=snap.data();
+const data = snap.data();
 
-if(data && data.request===true){
+if (data && data.request === true) {
 
-if(popup){
-
+if (popup)
 popup.classList.add("show");
-
-}
 
 }
 
 });
 
 
+/* ================= VERIFY SUBMIT ================= */
 
-// VERIFY SUBMIT
+window.submitVerify = async function () {
 
-window.submitVerify = async function(){
+try {
 
-try{
-
-const file=
+const file =
 document.getElementById("verifyPhoto").files[0];
 
-if(!file) return;
+if (!file) return;
 
-const date=
-new Date().toISOString().slice(0,10);
+const date =
+new Date().toISOString().slice(0, 10);
 
 await uploadBytes(
-ref(storage,"verify/"+date+"/"+userId),
+ref(storage, "verify/" + date + "/" + userId),
 file
 );
 
 await setDoc(
-doc(db,"verificationRequests","chirala"),
-{request:false}
+doc(db, "verificationRequests", "chirala"),
+{ request: false }
 );
 
-if(popup)
+if (popup)
 popup.classList.remove("show");
 
-}catch(e){
+} catch (e) {
 
 console.log(e);
 
