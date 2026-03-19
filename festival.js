@@ -98,7 +98,7 @@ timer.style.zIndex="9999";
 
 document.body.appendChild(timer);
 
-let seconds=3600;
+let seconds=55000;
 
 setInterval(()=>{
 
