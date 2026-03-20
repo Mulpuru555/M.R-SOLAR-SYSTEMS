@@ -36,7 +36,7 @@ const verifyText =
 document.getElementById("verifyStatus");
 
 
-/* ================= LOGIN ================= */
+/* LOGIN */
 
 onAuthStateChanged(auth,user=>{
 if(!user) window.location.href="index.html";
@@ -48,11 +48,11 @@ window.location.href="index.html";
 };
 
 
-/* ================= DATE ================= */
+/* DATE */
 
 function getDate(){
 
-const d = new Date();
+const d=new Date();
 
 return d.getFullYear()+"-"+
 String(d.getMonth()+1).padStart(2,"0")+"-"+
@@ -60,11 +60,11 @@ String(d.getDate()).padStart(2,"0");
 
 }
 
-const today = getDate();
-dateInput.value = today;
+const today=getDate();
+dateInput.value=today;
 
 
-/* ================= VERIFY ================= */
+/* VERIFY */
 
 onSnapshot(
 doc(db,"verificationRequests","chirala"),
@@ -90,7 +90,7 @@ alert("Verification sent");
 };
 
 
-/* ================= ATTENDANCE REPORT ================= */
+/* ================= ATTENDANCE ================= */
 
 async function loadAttendance(date){
 
@@ -103,28 +103,45 @@ where("role","==","employee")
 )
 );
 
-for(const u of users.docs){
+const att = await getDocs(
+collection(db,"attendance")
+);
 
-const user = u.data();
+const map={};
+
+att.forEach(d=>{
+
+const data=d.data();
+
+if(!data.date) return;
+
+const d1=data.date.replaceAll("/","-");
+
+if(d1===date){
+
+map[data.employeeId]=data;
+
+}
+
+});
+
+
+users.forEach(u=>{
+
+const user=u.data();
 
 let status="Absent";
 let time="-";
 
-/* NEW STRUCTURE */
-
-const snap = await getDoc(
-doc(db,"attendance",u.id,date,"data")
-);
-
-if(snap.exists()){
+if(map[u.id]){
 
 status="Present";
 
-const t = snap.data().time;
+const t=map[u.id].timestamp;
 
 if(t?.seconds){
 
-time = new Date(
+time=new Date(
 t.seconds*1000
 ).toLocaleTimeString("en-IN");
 
@@ -142,12 +159,13 @@ row.innerHTML=
 
 attendanceBody.appendChild(row);
 
-}
+});
 
 }
 
 
-/* ================= SUMMARY FINAL ================= */
+
+/* ================= SUMMARY FIXED ================= */
 
 async function loadSummary(){
 
@@ -160,24 +178,28 @@ where("role","==","employee")
 )
 );
 
-const now = new Date();
+const att = await getDocs(
+collection(db,"attendance")
+);
 
-const year = now.getFullYear();
-const month = now.getMonth()+1;
+const now=new Date();
+
+const year=now.getFullYear();
+const month=now.getMonth()+1;
 
 
 /* working days till today */
 
-let workingDays = 0;
+let workingDays=0;
 
 for(let d=1; d<=now.getDate(); d++){
 
-const date =
+const date=
 year+"-"+
 String(month).padStart(2,"0")+"-"+
 String(d).padStart(2,"0");
 
-const day = new Date(date);
+const day=new Date(date);
 
 if(day.getDay()===0) continue;
 
@@ -186,37 +208,41 @@ workingDays++;
 }
 
 
-/* per user */
+/* present count */
 
-for(const u of users.docs){
+const presentMap={};
 
-const user = u.data();
+att.forEach(docSnap=>{
 
-let present = 0;
+const data=docSnap.data();
 
-for(let d=1; d<=now.getDate(); d++){
+if(!data.date) return;
 
-const date =
-year+"-"+
-String(month).padStart(2,"0")+"-"+
-String(d).padStart(2,"0");
+const d=data.date.replaceAll("/","-");
 
-const day = new Date(date);
+if(
+d.startsWith(
+year+"-"+String(month).padStart(2,"0")
+)
+){
 
-if(day.getDay()===0) continue;
-
-const snap = await getDoc(
-doc(db,"attendance",u.id,date,"data")
-);
-
-if(snap.exists()) present++;
+presentMap[data.employeeId]=
+(presentMap[data.employeeId]||0)+1;
 
 }
 
-const absent = Math.max(
-0,
-workingDays - present
-);
+});
+
+
+users.forEach(u=>{
+
+const user=u.data();
+
+const present=
+presentMap[u.id]||0;
+
+const absent=
+Math.max(0,workingDays-present);
 
 const row=document.createElement("tr");
 
@@ -229,12 +255,13 @@ row.innerHTML=
 
 summaryBody.appendChild(row);
 
-}
+});
 
 }
 
 
-/* ================= BLOCKED ================= */
+
+/* BLOCKED */
 
 async function loadBlocked(){
 
@@ -268,7 +295,6 @@ blockedBody.appendChild(row);
 
 });
 
-
 document
 .querySelectorAll("button[data-id]")
 .forEach(btn=>{
@@ -292,7 +318,7 @@ loadBlocked();
 }
 
 
-/* ================= LOAD ================= */
+/* LOAD */
 
 dateInput.addEventListener(
 "change",
