@@ -36,7 +36,6 @@ const verifyText =
 document.getElementById("verifyStatus");
 
 
-
 /* ================= LOGIN ================= */
 
 onAuthStateChanged(auth,user=>{
@@ -46,14 +45,12 @@ window.location.href="index.html";
 
 });
 
-
 window.logoutUser=async()=>{
 
 await signOut(auth);
 window.location.href="index.html";
 
 };
-
 
 
 /* ================= DATE ================= */
@@ -69,30 +66,10 @@ String(d.getDate()).padStart(2,"0");
 }
 
 const today=getDate();
-
 dateInput.value=today;
 
 
-
-/* ================= HOLIDAY ================= */
-
-async function isHoliday(date){
-
-const d=new Date(date);
-
-if(d.getDay()==0) return true;
-
-const snap=await getDoc(
-doc(db,"settings","holidays","holidayList",date)
-);
-
-return snap.exists();
-
-}
-
-
-
-/* ================= VERIFY STATUS ================= */
+/* ================= VERIFY ================= */
 
 onSnapshot(
 doc(db,"verificationRequests","chirala"),
@@ -100,14 +77,11 @@ snap=>{
 
 if(!snap.exists()) return;
 
-const data=snap.data();
-
 verifyText.innerText =
-"Status : "+data.status;
+"Status : "+snap.data().status;
 
 }
 );
-
 
 window.sendVerify=async()=>{
 
@@ -119,13 +93,12 @@ status:"pending"
 }
 );
 
-alert("Verification sent successfully");
+alert("Verification sent");
 
 };
 
 
-
-/* ================= ATTENDANCE REPORT ================= */
+/* ================= ATTENDANCE ================= */
 
 async function loadAttendance(date){
 
@@ -148,10 +121,11 @@ att.forEach(d=>{
 
 const data=d.data();
 
+if(!data.date) return;
+
 if(
 data.date===date ||
-data.date===date.replaceAll("-","/") ||
-data.date.includes(date)
+data.date.replaceAll("/","-")===date
 ){
 map[data.employeeId]=data;
 }
@@ -197,8 +171,7 @@ attendanceBody.appendChild(row);
 }
 
 
-
-/* ================= SUMMARY (MONTH FIXED) ================= */
+/* ================= SUMMARY FIXED ================= */
 
 async function loadSummary(){
 
@@ -215,16 +188,17 @@ const att=await getDocs(
 collection(db,"attendance")
 );
 
-
 const now=new Date();
 
 const year=now.getFullYear();
 const month=now.getMonth()+1;
 
 
+/* ✅ working days till today */
+
 let workingDays=0;
 
-for(let d=1; d<=31; d++){
+for(let d=1; d<=now.getDate(); d++){
 
 const date=
 year+"-"+
@@ -233,14 +207,14 @@ String(d).padStart(2,"0");
 
 const day=new Date(date);
 
-if(day.getMonth()+1!==month) break;
-
 if(day.getDay()===0) continue;
 
 workingDays++;
 
 }
 
+
+/* present count */
 
 const presentMap={};
 
@@ -250,8 +224,10 @@ const data=docSnap.data();
 
 if(!data.date) return;
 
+const d=data.date.replaceAll("/","-");
+
 if(
-data.date.startsWith(
+d.startsWith(
 year+"-"+String(month).padStart(2,"0")
 )
 ){
@@ -272,7 +248,7 @@ const present=
 presentMap[u.id]||0;
 
 const absent=
-workingDays-present;
+Math.max(0,workingDays-present);
 
 const row=document.createElement("tr");
 
@@ -288,7 +264,6 @@ summaryBody.appendChild(row);
 });
 
 }
-
 
 
 /* ================= BLOCKED ================= */
@@ -316,11 +291,9 @@ row.innerHTML=
 <td>${user.branch}</td>
 <td>${user.blockReason}</td>
 <td>
-
 <button data-id="${d.id}">
 Unblock
 </button>
-
 </td>`;
 
 blockedBody.appendChild(row);
@@ -349,7 +322,6 @@ loadBlocked();
 });
 
 }
-
 
 
 /* ================= LOAD ================= */
