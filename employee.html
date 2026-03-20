@@ -1,233 +1,151 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
 <title>Employee Dashboard</title>
 
+<link rel="stylesheet" href="employee.css">
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
-<style>
-body{margin:0;font-family:'Montserrat',sans-serif;background:#0f0f0f;color:white;}
-.header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.6);}
-.header h2{color:#ff8c00;margin:0;}
-.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;}
-.dashboard-container{padding:40px;max-width:1200px;margin:auto;}
-.section-title{margin-bottom:15px;color:#ff8c00;font-weight:600;}
-.attendance-box{background:#1a1a1a;padding:30px;border-radius:15px;margin-bottom:40px;text-align:center;}
-.attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;}
-.attendance-btn:disabled{background:gray;cursor:not-allowed;}
-.status-message{margin-top:15px;font-weight:600;}
-.distance-box{margin-top:15px;font-weight:bold;}
-.green{color:#00e676;}
-.red{color:#ff5252;}
-.payment-box{background:#1a1a1a;padding:30px;border-radius:15px;margin-bottom:40px;}
-.payment-box input{padding:12px;width:260px;border-radius:8px;border:none;margin-bottom:15px;background:#222;color:white;}
-.payment-btn{padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;}
-table{width:100%;border-collapse:collapse;margin-top:20px;background:#1a1a1a;border-radius:15px;overflow:hidden;}
-th{background:#222;color:#ff8c00;padding:12px;}
-td{padding:12px;border-bottom:1px solid #333;text-align:center;}
-</style>
 </head>
 
 <body>
 
+
 <div class="header">
+
 <h2>M.R Solar Systems Employee Portal</h2>
-<button class="logout-btn" id="logoutBtn">Logout</button>
+
+<button id="logoutBtn">Logout</button>
+
 </div>
 
-<div class="dashboard-container">
 
-<h2 class="section-title">Attendance</h2>
 
-<div class="attendance-box">
-<div id="distanceDisplay" class="distance-box">Checking location...</div>
-<div id="countdownBox" style="margin-bottom:15px;font-weight:600;">Loading countdown...</div>
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>
+<div class="dashboard">
+
+
+<div class="cards">
+
+<div class="card" onclick="openSection('attendanceSection')">
+Attendance
+</div>
+
+<div class="card" onclick="openSection('erpSection')">
+Customer ERP
+</div>
+
+</div>
+
+
+
+<!-- Attendance -->
+
+<div id="attendanceSection" class="section">
+
+<div class="glass">
+
+<div id="distanceDisplay">Checking location...</div>
+
+<div id="countdownBox">Loading...</div>
+
+<button id="attendanceBtn" onclick="markAttendance()">
 Mark Attendance
 </button>
-<div id="attendanceStatus" class="status-message"></div>
+
+<div id="attendanceStatus"></div>
+
 </div>
 
-<h2 class="section-title">Add Customer (ERP)</h2>
+</div>
 
-<div class="payment-box">
+
+
+<!-- ERP -->
+
+<div id="erpSection" class="section" style="display:none">
+
+<div class="glass">
+
 <form id="paymentForm">
-<input type="text" id="customerName" placeholder="Customer Name" required><br>
-<input type="text" id="executiveName" placeholder="Executive Name" required><br>
-<input type="number" id="totalAmount" placeholder="Total Amount" required><br>
-<button type="submit" class="payment-btn">Submit</button>
+
+<input id="customerName" placeholder="Customer Name">
+
+<input id="executiveName" placeholder="Executive Name">
+
+<input id="totalAmount" placeholder="Total Amount">
+
+<button type="submit">Add</button>
+
 </form>
-<div id="paymentMessage" class="status-message"></div>
+
+<div id="paymentMessage"></div>
+
 </div>
 
-<h2 class="section-title">My Registrations</h2>
+
+<div class="glass">
 
 <table>
+
 <thead>
+
 <tr>
+
+<th>S.No</th>
 <th>Customer</th>
 <th>Executive</th>
 <th>Total</th>
 <th>Paid</th>
 <th>Status</th>
+<th>Date</th>
 <th>Lock</th>
+<th>Edit</th>
+
 </tr>
+
 </thead>
+
 <tbody id="recordsTable"></tbody>
+
 </table>
 
 </div>
 
-<script type="module">
-import { auth, db } from "./firebase-config.js";
+</div>
 
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+</div>
 
-/* ======================
-   AUTH + BLOCK CHECK
-====================== */
 
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    window.location.href="index.html";
-    return;
-  }
 
-  const userSnap = await getDoc(doc(db,"users",user.uid));
+<!-- Edit Popup -->
 
-  if(!userSnap.exists()){
-    window.location.href="index.html";
-    return;
-  }
+<div id="editPopup" class="popup">
 
-  const userData = userSnap.data();
+<div class="popupBox">
 
-  if(userData.accountStatus === "blocked"){
-    showBlockedScreen();
-    return;
-  }
+<h3>Edit Customer</h3>
 
-  loadRecords(user.uid);
-});
+<input id="editName">
 
-/* ======================
-   BLOCK SCREEN
-====================== */
+<input id="editExec">
 
-function showBlockedScreen(){
-  document.body.innerHTML = `
-  <div style="height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;color:white;">
-    <div style="background:#1a1a1a;padding:50px;border-radius:15px;border:2px solid red;text-align:center;">
-      <h2 style="color:#ff5252;">🔒 ACCOUNT BLOCKED</h2>
-      <p>Please contact branch Manager to reactivate your account.</p>
-      <button id="blockedLogoutBtn" style="margin-top:20px;padding:10px 20px;background:#ff5252;border:none;border-radius:8px;color:white;cursor:pointer;">Logout</button>
-    </div>
-  </div>`;
+<input id="editTotal">
 
-  document.getElementById("blockedLogoutBtn")
-    .addEventListener("click", async ()=>{
-      await signOut(auth);
-      window.location.href="index.html";
-    });
-}
+<button onclick="saveEdit()">Save</button>
 
-/* ======================
-   LOGOUT
-====================== */
+<button onclick="closePopup()">Cancel</button>
 
-document.getElementById("logoutBtn")
-  .addEventListener("click", async ()=>{
-    await signOut(auth);
-    window.location.href="index.html";
-});
+</div>
 
-/* ======================
-   ADD CUSTOMER (ERP)
-====================== */
+</div>
 
-document.getElementById("paymentForm")
-  .addEventListener("submit", async (e)=>{
-    e.preventDefault();
 
-    const user = auth.currentUser;
-    if(!user) return;
 
-    const customerName = document.getElementById("customerName").value.trim();
-    const executiveName = document.getElementById("executiveName").value.trim();
-    const totalAmount = Number(document.getElementById("totalAmount").value);
-
-    if(!customerName || !executiveName || !totalAmount){
-      document.getElementById("paymentMessage").innerText = "All fields required.";
-      return;
-    }
-
-    await addDoc(collection(db,"customerPayments"),{
-      customerName,
-      executiveName,
-      totalAmount,
-      createdBy: user.uid,
-      payments: [],
-      isLocked: false,
-      status: "Pending",
-      createdAt: serverTimestamp()
-    });
-
-    document.getElementById("paymentMessage").innerText = "Customer added successfully.";
-    document.getElementById("paymentForm").reset();
-
-    loadRecords(user.uid);
-});
-
-/* ======================
-   LOAD ERP RECORDS
-====================== */
-
-async function loadRecords(uid){
-
-  const q = query(
-    collection(db,"customerPayments"),
-    where("createdBy","==",uid)
-  );
-
-  const snapshot = await getDocs(q);
-  const table = document.getElementById("recordsTable");
-  table.innerHTML = "";
-
-  snapshot.forEach(docSnap=>{
-    const data = docSnap.data();
-    const payments = data.payments || [];
-    const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
-
-    table.innerHTML+=`
-    <tr>
-      <td>${data.customerName}</td>
-      <td>${data.executiveName}</td>
-      <td>₹${data.totalAmount}</td>
-      <td>₹${totalPaid}</td>
-      <td>${data.status}</td>
-      <td>${data.isLocked ? "Locked" : "Editable"}</td>
-    </tr>`;
-  });
-}
-
-</script>
-
-<!-- Attendance System -->
+<script type="module" src="employee.js"></script>
 <script type="module" src="attendance.js"></script>
 
 </body>
