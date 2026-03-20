@@ -188,6 +188,20 @@ const month=now.getMonth()+1;
 
 /* working days till today */
 
+let workingDays = 0;
+
+// get holidays once
+const holidaySnap = await getDocs(
+collection(db,"settings","holidays","holidayList")
+);
+
+const holidaySet = new Set();
+
+holidaySnap.forEach(docSnap=>{
+holidaySet.add(docSnap.id);
+});
+
+
 for(let d=1; d<=now.getDate(); d++){
 
 const date =
@@ -197,14 +211,11 @@ String(d).padStart(2,"0");
 
 const day = new Date(date);
 
+// skip sunday
 if(day.getDay()===0) continue;
 
-// check holiday
-const holidaySnap = await getDoc(
-doc(db,"settings","holidays","holidayList",date)
-);
-
-if(holidaySnap.exists()) continue;
+// skip holiday
+if(holidaySet.has(date)) continue;
 
 workingDays++;
 
