@@ -210,24 +210,25 @@ window.markAttendance = async function () {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const attendanceSnap = await getDocs(
-    query(
-      collection(db, "attendance"),
-      where("employeeId", "==", user.uid),
-      where("date", "==", today)
-    )
+  const ref = doc(
+    db,
+    "attendance",
+    user.uid,
+    today,
+    "data"
   );
 
-  if (!attendanceSnap.empty) {
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
     statusBox.innerText = "Attendance already marked today.";
     btn.disabled = true;
     return;
   }
 
-  await addDoc(collection(db, "attendance"), {
-    employeeId: user.uid,
-    date: today,
-    timestamp: serverTimestamp()
+  await setDoc(ref, {
+    status: "present",
+    time: serverTimestamp()
   });
 
   statusBox.innerText = "✔ Attendance Marked Successfully";
@@ -239,40 +240,44 @@ window.markAttendance = async function () {
 /* ===========================
    ACCURATE MONTHLY SUMMARY
 =========================== */
-
 async function loadMonthlySummary(user) {
 
   const today = new Date();
   const year = today.getFullYear();
   const monthIndex = today.getMonth();
-  const monthStr = today.toISOString().slice(0, 7);
-
-  const attendanceSnap = await getDocs(
-    query(
-      collection(db, "attendance"),
-      where("employeeId", "==", user.uid)
-    )
-  );
 
   let present = 0;
 
-  attendanceSnap.forEach(docSnap => {
-    if (docSnap.data().date.startsWith(monthStr)) {
-      present++;
-    }
-  });
-
-  const holidaySet = await getMonthHolidays(year, monthIndex);
+  const holidaySet =
+    await getMonthHolidays(year, monthIndex);
 
   let workingDays = 0;
 
   for (let d = 1; d <= today.getDate(); d++) {
 
     const dateObj = new Date(year, monthIndex, d);
-    const dateStr = dateObj.toISOString().split("T")[0];
 
-    if (dateObj.getDay() !== 0 && !holidaySet.has(dateStr)) {
+    const dateStr =
+      dateObj.toISOString().split("T")[0];
+
+    if (
+      dateObj.getDay() !== 0 &&
+      !holidaySet.has(dateStr)
+    ) {
+
       workingDays++;
+
+      const snap = await getDoc(
+        doc(
+          db,
+          "attendance",
+          user.uid,
+          dateStr,
+          "data"
+        )
+      );
+
+      if (snap.exists()) present++;
     }
   }
 
@@ -280,10 +285,14 @@ async function loadMonthlySummary(user) {
     ? ((present / workingDays) * 100).toFixed(1)
     : 0;
 
-  const oldSummary = document.getElementById("monthlySummary");
+  const oldSummary =
+    document.getElementById("monthlySummary");
+
   if (oldSummary) oldSummary.remove();
 
-  const summaryDiv = document.createElement("div");
+  const summaryDiv =
+    document.createElement("div");
+
   summaryDiv.id = "monthlySummary";
   summaryDiv.style.marginTop = "15px";
   summaryDiv.style.fontWeight = "600";
@@ -315,15 +324,17 @@ async function checkAndHandleAbsence(user) {
   const today = new Date().toISOString().split("T")[0];
 
   // Check if attendance marked
-  const attendanceSnap = await getDocs(
-    query(
-      collection(db, "attendance"),
-      where("employeeId", "==", user.uid),
-      where("date", "==", today)
-    )
-  );
+  const ref = doc(
+  db,
+  "attendance",
+  user.uid,
+  today,
+  "data"
+);
 
-  if (!attendanceSnap.empty) return; // If present, do nothing
+const snap = await getDoc(ref);
+
+if (snap.exists()) return;
 
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
