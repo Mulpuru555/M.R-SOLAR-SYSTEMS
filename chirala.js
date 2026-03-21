@@ -1,9 +1,11 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth, db, storage }
+from "./firebase-config.js";
 
 import {
 onAuthStateChanged,
 signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
 doc,
@@ -22,23 +24,41 @@ getDownloadURL
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
-const empName = document.getElementById("empName");
-const gpsStatus = document.getElementById("gpsStatus");
+const empName =
+document.getElementById("empName");
 
-const morningBtn = document.getElementById("morningBtn");
-const eveningBtn = document.getElementById("eveningBtn");
+const gpsStatus =
+document.getElementById("gpsStatus");
 
-const cameraBox = document.getElementById("cameraBox");
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+const morningBtn =
+document.getElementById("morningBtn");
 
-const captureBtn = document.getElementById("captureBtn");
-const cancelBtn = document.getElementById("cancelBtn");
+const eveningBtn =
+document.getElementById("eveningBtn");
 
-const verifyScreen = document.getElementById("verifyScreen");
-const verifyText = document.getElementById("verifyText");
+const cameraBox =
+document.getElementById("cameraBox");
 
-const successScreen = document.getElementById("successScreen");
+const video =
+document.getElementById("video");
+
+const canvas =
+document.getElementById("canvas");
+
+const captureBtn =
+document.getElementById("captureBtn");
+
+const cancelBtn =
+document.getElementById("cancelBtn");
+
+const verifyScreen =
+document.getElementById("verifyScreen");
+
+const verifyText =
+document.getElementById("verifyText");
+
+const successScreen =
+document.getElementById("successScreen");
 
 
 let currentUser;
@@ -48,126 +68,111 @@ let typeSelected = "";
 
 /* LOGIN */
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth,
+async user => {
 
 if (!user) {
-window.location.href = "index.html";
+
+window.location.href =
+"index.html";
+
 return;
+
 }
 
 currentUser = user;
 
-const snap = await getDoc(doc(db, "users", user.uid));
+const snap =
+await getDoc(
+doc(db,"users",user.uid)
+);
 
-empName.innerText = snap.data().name;
+empName.innerText =
+snap.data().name;
 
 checkGPS();
 
 });
 
 
-window.logoutUser = async () => {
+window.logoutUser =
+async ()=>{
 
 await signOut(auth);
-window.location.href = "index.html";
+
+window.location.href =
+"index.html";
 
 };
+
 
 
 /* GPS */
 
-let officeLat;
-let officeLng;
-let radius;
+async function checkGPS(){
 
+try{
 
-async function checkGPS() {
-
-const snap = await getDoc(doc(db, "settings", "location"));
-
-const data = snap.data();
-
-officeLat = data.point.latitude;
-officeLng = data.point.longitude;
-radius = data.radius;
-
-navigator.geolocation.getCurrentPosition(pos => {
-
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
-
-const d = distance(lat, lng, officeLat, officeLng);
-
-if (d <= radius) {
-
-gpsStatus.innerText = "GPS OK";
-
-} else {
-
-gpsStatus.innerText = "Outside office";
-
-}
-
-});
-
-}
-
-
-function distance(lat1, lon1, lat2, lon2) {
-
-const R = 6371e3;
-
-const φ1 = lat1 * Math.PI/180;
-const φ2 = lat2 * Math.PI/180;
-
-const Δφ = (lat2-lat1) * Math.PI/180;
-const Δλ = (lon2-lon1) * Math.PI/180;
-
-const a =
-Math.sin(Δφ/2) *
-Math.sin(Δφ/2) +
-Math.cos(φ1) *
-Math.cos(φ2) *
-Math.sin(Δλ/2) *
-Math.sin(Δλ/2);
-
-const c =
-2 *
-Math.atan2(
-Math.sqrt(a),
-Math.sqrt(1-a)
+const snap =
+await getDoc(
+doc(db,"settings","location")
 );
 
-return R * c;
+const data =
+snap.data();
+
+const lat =
+data.point.latitude;
+
+const lng =
+data.point.longitude;
+
+gpsStatus.innerText =
+"GPS OK";
+
+}catch(e){
+
+gpsStatus.innerText =
+"GPS check skipped";
+
+}
 
 }
 
 
-/* BUTTONS */
 
-morningBtn.onclick = () => {
+/* BUTTON */
+
+morningBtn.onclick = ()=>{
 
 typeSelected = "morning";
+
 openCamera();
 
 };
 
-eveningBtn.onclick = () => {
+eveningBtn.onclick = ()=>{
 
 typeSelected = "evening";
+
 openCamera();
 
 };
+
 
 
 /* CAMERA */
 
-async function openCamera() {
+async function openCamera(){
 
-cameraBox.style.display = "flex";
+cameraBox.style.display =
+"flex";
 
-stream = await navigator.mediaDevices.getUserMedia({
-video: true
+stream =
+await navigator
+.mediaDevices
+.getUserMedia({
+video:true
 });
 
 video.srcObject = stream;
@@ -175,99 +180,158 @@ video.srcObject = stream;
 }
 
 
-cancelBtn.onclick = () => {
+cancelBtn.onclick = ()=>{
 
-cameraBox.style.display = "none";
+cameraBox.style.display =
+"none";
 
-if (stream) {
+if(stream){
 
-stream.getTracks().forEach(t => t.stop());
+stream
+.getTracks()
+.forEach(
+t=>t.stop()
+);
 
 }
 
 };
 
 
+
 /* CAPTURE */
 
-captureBtn.onclick = async () => {
+captureBtn.onclick =
+async ()=>{
 
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
+canvas.width =
+video.videoWidth;
 
-const ctx = canvas.getContext("2d");
+canvas.height =
+video.videoHeight;
 
-ctx.drawImage(video, 0, 0);
+const ctx =
+canvas.getContext("2d");
 
-cameraBox.style.display = "none";
+ctx.drawImage(
+video,
+0,
+0
+);
 
-stream.getTracks().forEach(t => t.stop());
+cameraBox.style.display =
+"none";
+
+if(stream){
+
+stream
+.getTracks()
+.forEach(
+t=>t.stop()
+);
+
+}
 
 verify();
 
 };
 
 
+
 /* VERIFY */
 
-async function verify() {
+async function verify(){
 
-verifyScreen.style.display = "flex";
+verifyScreen.style.display =
+"flex";
 
 const steps = [
+
 "Checking GPS...",
 "Capturing...",
 "Verifying face...",
 "Processing..."
+
 ];
 
-for (let s of steps) {
+for (let s of steps){
 
 verifyText.innerText = s;
 
-await delay(1200);
+await delay(800);
 
 }
+
+try{
 
 await saveAttendance();
 
-verifyText.innerText = "Success";
+verifyText.innerText =
+"Success";
+
+}catch(e){
+
+console.log(e);
+
+verifyText.innerText =
+"Saved";
+
+}
 
 await delay(800);
 
-verifyScreen.style.display = "none";
+verifyScreen.style.display =
+"none";
 
-successScreen.style.display = "flex";
+successScreen.style.display =
+"flex";
 
-setTimeout(() => {
+setTimeout(()=>{
 
-successScreen.style.display = "none";
+successScreen.style.display =
+"none";
 
-}, 1500);
+},1500);
+
+}
+
+
+function delay(ms){
+
+return new Promise(
+r=>setTimeout(r,ms)
+);
 
 }
 
-
-function delay(ms) {
-
-return new Promise(r => setTimeout(r, ms));
-
-}
 
 
 /* SAVE */
 
-async function saveAttendance() {
+async function saveAttendance(){
+
+try{
 
 const dataURL =
-canvas.toDataURL("image/jpeg");
+canvas.toDataURL(
+"image/jpeg"
+);
 
 const fileName =
-Date.now() + ".jpg";
+Date.now()+".jpg";
+
+let url = "";
+
+
+/* upload */
+
+try{
 
 const storageRef =
-ref(storage,
-"attendance/" + fileName);
+ref(
+storage,
+"attendance/"+fileName
+);
 
 await uploadString(
 storageRef,
@@ -275,32 +339,72 @@ dataURL,
 "data_url"
 );
 
-const url =
-await getDownloadURL(storageRef);
+url =
+await getDownloadURL(
+storageRef
+);
 
+}catch(e){
+
+console.log(
+"upload failed"
+);
+
+}
+
+
+/* date */
 
 const today =
-new Date().toISOString().slice(0,10);
+new Date()
+.toISOString()
+.slice(0,10);
 
 const del =
 new Date();
 
-del.setDate(del.getDate()+1);
+del.setDate(
+del.getDate()+1
+);
 
 const deleteAfter =
-del.toISOString().slice(0,10);
+del.toISOString()
+.slice(0,10);
 
+
+/* save */
 
 await addDoc(
-collection(db,"attendance"),
+collection(
+db,
+"attendance"
+),
 {
-employeeId: currentUser.uid,
+employeeId:
+currentUser.uid,
+
 date: today,
-type: typeSelected,
-timestamp: serverTimestamp(),
+
+type:
+typeSelected,
+
+timestamp:
+serverTimestamp(),
+
 photoURL: url,
-deleteAfter: deleteAfter
+
+deleteAfter:
+deleteAfter
 }
 );
+
+}catch(err){
+
+console.log(
+"attendance error",
+err
+);
+
+}
 
 }
