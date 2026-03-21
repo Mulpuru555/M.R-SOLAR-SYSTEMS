@@ -17,8 +17,6 @@ updateDoc
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-/* ELEMENTS */
-
 const attendanceBody =
 document.getElementById("attendanceTable");
 
@@ -32,7 +30,7 @@ const dateInput =
 document.getElementById("attendanceDate");
 
 
-/* LOGIN CHECK */
+/* LOGIN */
 
 onAuthStateChanged(auth,user=>{
 if(!user){
@@ -41,13 +39,9 @@ window.location.href="index.html";
 });
 
 
-/* LOGOUT */
-
 window.logoutUser = async ()=>{
-
 await signOut(auth);
 window.location.href="index.html";
-
 };
 
 
@@ -64,8 +58,41 @@ String(d.getDate()).padStart(2,"0");
 }
 
 const today = getToday();
-
 dateInput.value = today;
+
+
+
+/* ================= AUTO DELETE PHOTOS ================= */
+
+async function cleanOldPhotos(){
+
+const snap = await getDocs(
+collection(db,"attendance")
+);
+
+const today = getToday();
+
+snap.forEach(async d=>{
+
+const data = d.data();
+
+if(!data.deleteAfter) return;
+
+if(data.deleteAfter < today){
+
+await updateDoc(
+doc(db,"attendance",d.id),
+{
+photoURL:""
+}
+);
+
+}
+
+});
+
+}
+
 
 
 /* ================= ATTENDANCE ================= */
@@ -73,6 +100,8 @@ dateInput.value = today;
 async function loadAttendance(date){
 
 attendanceBody.innerHTML="";
+
+await cleanOldPhotos();
 
 const usersSnap = await getDocs(
 query(
@@ -91,13 +120,15 @@ attSnap.forEach(docSnap=>{
 
 const data = docSnap.data();
 
-if(!data.date) return;
+if(data.date !== date) return;
 
-if(data.date === date){
+if(!map[data.employeeId]){
 
-map[data.employeeId] = data;
+map[data.employeeId] = [];
 
 }
+
+map[data.employeeId].push(data);
 
 });
 
@@ -106,49 +137,65 @@ usersSnap.forEach(u=>{
 
 const user = u.data();
 
-let status = "Absent";
+let rows = map[u.id] || [];
+
+if(rows.length === 0){
+
+const tr = document.createElement("tr");
+
+tr.innerHTML =
+
+`<td>${user.name}</td>
+<td>Absent</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>`;
+
+attendanceBody.appendChild(tr);
+
+return;
+
+}
+
+
+rows.forEach(r=>{
+
 let time = "-";
-let photo = "";
 
-if(map[u.id]){
+if(r.timestamp?.seconds){
 
-status = "Present";
-
-const t = map[u.id].timestamp;
-
-if(t?.seconds){
-
-time = new Date(
-t.seconds*1000
+time =
+new Date(
+r.timestamp.seconds*1000
 ).toLocaleTimeString("en-IN");
 
 }
 
-photo = map[u.id].photoURL || "";
+const tr = document.createElement("tr");
 
-}
-
-const row = document.createElement("tr");
-
-row.innerHTML =
+tr.innerHTML =
 
 `<td>${user.name}</td>
-<td>${status}</td>
+<td>Present</td>
+<td>${r.type || "-"}</td>
 <td>${time}</td>
 <td>
-${photo ?
-`<img src="${photo}"
+${r.photoURL ?
+`<img src="${r.photoURL}"
 width="60"
 style="border-radius:6px">`
 :
 "-"}
 </td>`;
 
-attendanceBody.appendChild(row);
+attendanceBody.appendChild(tr);
+
+});
 
 });
 
 }
+
 
 
 /* ================= SUMMARY ================= */
@@ -174,8 +221,6 @@ const year = now.getFullYear();
 const month = now.getMonth()+1;
 
 
-/* working days */
-
 let workingDays = 0;
 
 for(let d=1; d<=now.getDate(); d++){
@@ -187,14 +232,12 @@ String(d).padStart(2,"0");
 
 const day = new Date(date);
 
-if(day.getDay() === 0) continue;
+if(day.getDay()===0) continue;
 
 workingDays++;
 
 }
 
-
-/* present count */
 
 const presentMap = {};
 
@@ -211,7 +254,7 @@ year+"-"+String(month).padStart(2,"0")
 ){
 
 presentMap[data.employeeId] =
-(presentMap[data.employeeId] || 0) + 1;
+(presentMap[data.employeeId]||0)+1;
 
 }
 
@@ -223,25 +266,26 @@ usersSnap.forEach(u=>{
 const user = u.data();
 
 const present =
-presentMap[u.id] || 0;
+presentMap[u.id]||0;
 
 const absent =
-workingDays - present;
+workingDays-present;
 
-const row = document.createElement("tr");
+const tr = document.createElement("tr");
 
-row.innerHTML =
+tr.innerHTML =
 
 `<td>${user.name}</td>
 <td>${workingDays}</td>
 <td>${present}</td>
 <td>${absent}</td>`;
 
-summaryBody.appendChild(row);
+summaryBody.appendChild(tr);
 
 });
 
 }
+
 
 
 /* ================= BLOCKED ================= */
@@ -261,9 +305,9 @@ snap.forEach(d=>{
 
 const user = d.data();
 
-const row = document.createElement("tr");
+const tr = document.createElement("tr");
 
-row.innerHTML =
+tr.innerHTML =
 
 `<td>${user.name}</td>
 <td>${user.branch}</td>
@@ -274,7 +318,7 @@ Unblock
 </button>
 </td>`;
 
-blockedBody.appendChild(row);
+blockedBody.appendChild(tr);
 
 });
 
@@ -300,6 +344,7 @@ loadBlocked();
 });
 
 }
+
 
 
 /* LOAD */
