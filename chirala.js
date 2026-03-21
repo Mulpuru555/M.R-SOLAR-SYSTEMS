@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db, storage } from "./firebase-config.js";
 
 import {
 onAuthStateChanged,
@@ -6,333 +6,301 @@ signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-collection,
-getDocs,
-query,
-where,
 doc,
-updateDoc,
 getDoc,
-setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-const attendanceBody =
-document.getElementById("attendanceTable");
-
-const blockedBody =
-document.getElementById("blockedTable");
-
-const summaryBody =
-document.getElementById("summaryTable");
-
-const dateInput =
-document.getElementById("attendanceDate");
-
-
-
-onAuthStateChanged(auth,(user)=>{
-
-if(!user){
-window.location.href="index.html";
+addDoc,
+collection,
+serverTimestamp
 }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+ref,
+uploadString,
+getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+
+const empName = document.getElementById("empName");
+const gpsStatus = document.getElementById("gpsStatus");
+
+const morningBtn = document.getElementById("morningBtn");
+const eveningBtn = document.getElementById("eveningBtn");
+
+const cameraBox = document.getElementById("cameraBox");
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+
+const captureBtn = document.getElementById("captureBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+
+const verifyScreen = document.getElementById("verifyScreen");
+const verifyText = document.getElementById("verifyText");
+
+const successScreen = document.getElementById("successScreen");
+
+
+let currentUser;
+let stream;
+let typeSelected = "";
+
+
+/* LOGIN */
+
+onAuthStateChanged(auth, async (user) => {
+
+if (!user) {
+window.location.href = "index.html";
+return;
+}
+
+currentUser = user;
+
+const snap = await getDoc(doc(db, "users", user.uid));
+
+empName.innerText = snap.data().name;
+
+checkGPS();
 
 });
 
 
-window.logoutUser = async function(){
+window.logoutUser = async () => {
 
 await signOut(auth);
-window.location.href="index.html";
+window.location.href = "index.html";
 
 };
 
 
+/* GPS */
 
-function getLocalDateString(dateObj){
-
-return dateObj.getFullYear()+"-"+
-
-String(dateObj.getMonth()+1).padStart(2,"0")+"-"+
-
-String(dateObj.getDate()).padStart(2,"0");
-
-}
+let officeLat;
+let officeLng;
+let radius;
 
 
-const today =
-getLocalDateString(new Date());
+async function checkGPS() {
 
-dateInput.value=today;
+const snap = await getDoc(doc(db, "settings", "location"));
 
+const data = snap.data();
 
+officeLat = data.point.latitude;
+officeLng = data.point.longitude;
+radius = data.radius;
 
-async function isHoliday(date){
+navigator.geolocation.getCurrentPosition(pos => {
 
-const d=new Date(date);
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
 
-if(d.getDay()==0) return true;
+const d = distance(lat, lng, officeLat, officeLng);
 
-const snap=await getDoc(
-doc(db,"settings","holidays","holidayList",date)
-);
+if (d <= radius) {
 
-return snap.exists();
+gpsStatus.innerText = "GPS OK";
 
-}
+} else {
 
-
-
-/* ATTENDANCE */
-
-async function loadAttendance(date){
-
-attendanceBody.innerHTML="";
-
-const holiday=await isHoliday(date);
-
-const usersSnapshot=await getDocs(
-query(collection(db,"users"),
-where("role","==","employee"))
-);
-
-const attendanceSnapshot=
-await getDocs(collection(db,"attendance"));
-
-const map={};
-
-attendanceSnapshot.forEach(docSnap=>{
-
-const data=docSnap.data();
-
-if(data.date===date){
-map[data.employeeId]=data;
-}
-
-});
-
-
-usersSnapshot.forEach(docSnap=>{
-
-const user=docSnap.data();
-
-let status;
-let time="-";
-
-if(holiday){
-
-status="<span class='holiday'>Holiday</span>";
+gpsStatus.innerText = "Outside office";
 
 }
-else if(map[docSnap.id]){
-
-status="<span class='present'>Present</span>";
-
-const t=map[docSnap.id].timestamp;
-
-if(t?.seconds){
-
-time=new Date(
-t.seconds*1000
-).toLocaleTimeString("en-IN");
-
-}
-
-}
-else{
-
-status="<span class='absent'>Absent</span>";
-
-}
-
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-
-<td>${user.name}</td>
-
-<td>${status}</td>
-
-<td>${time}</td>
-
-`;
-
-attendanceBody.appendChild(row);
-
-});
-
-
-}
-
-
-
-/* SUMMARY */
-
-async function loadSummary(){
-
-summaryBody.innerHTML="";
-
-const usersSnapshot=await getDocs(
-query(collection(db,"users"),
-where("role","==","employee"))
-);
-
-const attendanceSnapshot=
-await getDocs(collection(db,"attendance"));
-
-const todayDate=new Date();
-
-const start=new Date(
-todayDate.getFullYear(),
-todayDate.getMonth(),
-1
-);
-
-let workingDays=0;
-
-for(
-let d=new Date(start);
-d<=todayDate;
-d.setDate(d.getDate()+1)
-){
-
-if(d.getDay()==0) continue;
-
-workingDays++;
-
-}
-
-
-const presentMap={};
-
-attendanceSnapshot.forEach(docSnap=>{
-
-const data=docSnap.data();
-
-presentMap[data.employeeId] =
-(presentMap[data.employeeId]||0)+1;
-
-});
-
-
-usersSnapshot.forEach(docSnap=>{
-
-const user=docSnap.data();
-
-const present=
-presentMap[docSnap.id]||0;
-
-const absent=
-workingDays-present;
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-
-<td>${user.name}</td>
-
-<td>${workingDays}</td>
-
-<td>${present}</td>
-
-<td>${absent}</td>
-
-`;
-
-summaryBody.appendChild(row);
 
 });
 
 }
 
 
+function distance(lat1, lon1, lat2, lon2) {
 
-/* BLOCKED */
+const R = 6371e3;
 
-async function loadBlocked(){
+const φ1 = lat1 * Math.PI/180;
+const φ2 = lat2 * Math.PI/180;
 
-blockedBody.innerHTML="";
+const Δφ = (lat2-lat1) * Math.PI/180;
+const Δλ = (lon2-lon1) * Math.PI/180;
 
-const snapshot=await getDocs(
-query(collection(db,"users"),
-where("accountStatus","==","blocked"))
+const a =
+Math.sin(Δφ/2) *
+Math.sin(Δφ/2) +
+Math.cos(φ1) *
+Math.cos(φ2) *
+Math.sin(Δλ/2) *
+Math.sin(Δλ/2);
+
+const c =
+2 *
+Math.atan2(
+Math.sqrt(a),
+Math.sqrt(1-a)
 );
 
-snapshot.forEach(docSnap=>{
+return R * c;
 
-const user=docSnap.data();
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-
-<td>${user.name}</td>
-<td>${user.branch}</td>
-<td>${user.blockReason}</td>
-<td>${user.lastAbsentDate}</td>
-<td>
-
-<button data-id="${docSnap.id}">
-Unblock
-</button>
-
-</td>
-
-`;
-
-blockedBody.appendChild(row);
-
-});
-
-
-document.querySelectorAll("button[data-id]")
-.forEach(btn=>{
-
-btn.onclick=async()=>{
-
-await updateDoc(
-doc(db,"users",
-btn.dataset.id),
-{
-accountStatus:"active",
-absenceCount:0
 }
-);
 
-loadBlocked();
+
+/* BUTTONS */
+
+morningBtn.onclick = () => {
+
+typeSelected = "morning";
+openCamera();
 
 };
 
+eveningBtn.onclick = () => {
+
+typeSelected = "evening";
+openCamera();
+
+};
+
+
+/* CAMERA */
+
+async function openCamera() {
+
+cameraBox.style.display = "flex";
+
+stream = await navigator.mediaDevices.getUserMedia({
+video: true
 });
+
+video.srcObject = stream;
 
 }
 
+
+cancelBtn.onclick = () => {
+
+cameraBox.style.display = "none";
+
+if (stream) {
+
+stream.getTracks().forEach(t => t.stop());
+
+}
+
+};
+
+
+/* CAPTURE */
+
+captureBtn.onclick = async () => {
+
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+const ctx = canvas.getContext("2d");
+
+ctx.drawImage(video, 0, 0);
+
+cameraBox.style.display = "none";
+
+stream.getTracks().forEach(t => t.stop());
+
+verify();
+
+};
 
 
 /* VERIFY */
 
-window.sendVerify = async function(){
+async function verify() {
 
-await setDoc(
-doc(db,"verificationRequests","chirala"),
+verifyScreen.style.display = "flex";
+
+const steps = [
+"Checking GPS...",
+"Capturing...",
+"Verifying face...",
+"Processing..."
+];
+
+for (let s of steps) {
+
+verifyText.innerText = s;
+
+await delay(1200);
+
+}
+
+await saveAttendance();
+
+verifyText.innerText = "Success";
+
+await delay(800);
+
+verifyScreen.style.display = "none";
+
+successScreen.style.display = "flex";
+
+setTimeout(() => {
+
+successScreen.style.display = "none";
+
+}, 1500);
+
+}
+
+
+function delay(ms) {
+
+return new Promise(r => setTimeout(r, ms));
+
+}
+
+
+/* SAVE */
+
+async function saveAttendance() {
+
+const dataURL =
+canvas.toDataURL("image/jpeg");
+
+const fileName =
+Date.now() + ".jpg";
+
+const storageRef =
+ref(storage,
+"attendance/" + fileName);
+
+await uploadString(
+storageRef,
+dataURL,
+"data_url"
+);
+
+const url =
+await getDownloadURL(storageRef);
+
+
+const today =
+new Date().toISOString().slice(0,10);
+
+const del =
+new Date();
+
+del.setDate(del.getDate()+1);
+
+const deleteAfter =
+del.toISOString().slice(0,10);
+
+
+await addDoc(
+collection(db,"attendance"),
 {
-request:true
+employeeId: currentUser.uid,
+date: today,
+type: typeSelected,
+timestamp: serverTimestamp(),
+photoURL: url,
+deleteAfter: deleteAfter
 }
 );
 
-alert("Verification sent");
-
-};
-
-
-
-dateInput.addEventListener(
-"change",
-()=>loadAttendance(dateInput.value)
-);
-
-
-loadAttendance(today);
-loadSummary();
-loadBlocked();
+}
