@@ -1,10 +1,14 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getStorage }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
 const firebaseConfig = {
@@ -15,7 +19,7 @@ authDomain: "mr-solar-portal.firebaseapp.com",
 
 projectId: "mr-solar-portal",
 
-storageBucket: "mr-solar-portal.firebasestorage.app",
+storageBucket: "mr-solar-portal.appspot.com",
 
 messagingSenderId: "1017116122935",
 
@@ -23,7 +27,9 @@ appId: "1:1017116122935:web:db1256b90c66c96ad644b2"
 
 };
 
+
 const app = initializeApp(firebaseConfig);
+
 
 export const auth = getAuth(app);
 
