@@ -1,4 +1,4 @@
-js- import { auth, db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import {
 collection,
@@ -198,7 +198,7 @@ data.isLocked !== false;
 const editBtn =
 locked
 ? "Locked"
-: <button data-id="${id}" class="editBtn">Edit</button>;
+: `<button data-id="${id}" class="editBtn">Edit</button>`;
 
 
 table.insertAdjacentHTML(
@@ -220,8 +220,6 @@ table.insertAdjacentHTML(
 
 });
 
-
-/* attach edit buttons */
 
 document.querySelectorAll(".editBtn")
 .forEach(btn=>{
