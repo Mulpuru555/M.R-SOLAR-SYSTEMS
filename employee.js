@@ -374,7 +374,6 @@ d.address || "";
 
 
 /* ================= MONTHLY REPORT ================= */
-
 async function loadReport(){
 
 if(!uid) return;
@@ -383,7 +382,6 @@ const box =
 document.getElementById("reportBox");
 
 if(!box) return;
-
 
 const q =
 query(
@@ -403,7 +401,7 @@ total++;
 
 const d = doc.data();
 
-if(d.status==="Present"){
+if(d.present === true || d.status==="Present"){
 present++;
 }
 
@@ -422,23 +420,49 @@ Absent : ${absent}
 
 }
 
-
-
 /* ================= SECTION HOOK ================= */
 
-const oldOpen = window.openSection;
+let currentSection = "";
 
 window.openSection = (id)=>{
 
-oldOpen(id);
+const sections = [
+"attendanceSection",
+"erpSection",
+"profileSection",
+"reportSection",
+"notifySection"
+];
 
-if(id==="profileSection"){
-loadProfile();
+sections.forEach(s=>{
+
+const el = document.getElementById(s);
+
+if(!el) return;
+
+if(s === id){
+
+if(currentSection === id){
+
+el.style.display="none";
+currentSection="";
+
+}
+else{
+
+el.style.display="block";
+currentSection=id;
+
 }
 
-if(id==="reportSection"){
-loadReport();
 }
+else{
+
+el.style.display="none";
+
+}
+
+});
 
 };
 
