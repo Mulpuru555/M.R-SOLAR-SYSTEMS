@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+js- import { auth, db } from "./firebase-config.js";
 
 import {
 collection,
@@ -9,8 +9,7 @@ addDoc,
 serverTimestamp,
 doc,
 updateDoc,
-getDoc,
-setDoc
+getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -89,50 +88,18 @@ location.href="index.html";
 
 /* ================= SECTION SWITCH ================= */
 
-let currentSection = "";
-
 window.openSection = (id)=>{
 
-const sections = [
-"attendanceSection",
-"erpSection",
-"profileSection",
-"reportSection"
-];
+const a = document.getElementById("attendanceSection");
+const b = document.getElementById("erpSection");
 
-sections.forEach(s=>{
+if(a) a.style.display="none";
+if(b) b.style.display="none";
 
-const el = document.getElementById(s);
-
-if(!el) return;
-
-if(s === id){
-
-if(currentSection === id){
-
-el.style.display="none";
-currentSection="";
-
-}else{
-
-el.style.display="block";
-currentSection=id;
-
-if(id==="profileSection") loadProfile();
-if(id==="reportSection") loadReport();
-
-}
-
-}else{
-
-el.style.display="none";
-
-}
-
-});
+const target = document.getElementById(id);
+if(target) target.style.display="block";
 
 };
-
 
 
 /* ================= ADD PAYMENT ================= */
@@ -231,7 +198,7 @@ data.isLocked !== false;
 const editBtn =
 locked
 ? "Locked"
-: `<button data-id="${id}" class="editBtn">Edit</button>`;
+: <button data-id="${id}" class="editBtn">Edit</button>;
 
 
 table.insertAdjacentHTML(
@@ -253,6 +220,8 @@ table.insertAdjacentHTML(
 
 });
 
+
+/* attach edit buttons */
 
 document.querySelectorAll(".editBtn")
 .forEach(btn=>{
@@ -277,7 +246,6 @@ rec.data.totalAmount
 });
 
 }
-
 
 
 /* ================= EDIT ================= */
@@ -324,78 +292,3 @@ closePopup();
 loadRecords(uid);
 
 };
-
-
-
-/* ================= PROFILE ================= */
-
-async function loadProfile(){
-
-const ref =
-doc(db,"employeeProfiles",uid);
-
-const snap =
-await getDoc(ref);
-
-if(!snap.exists()) return;
-
-const d = snap.data();
-
-profileName.value = d.name || "";
-profilePhone.value = d.phone || "";
-profileBranch.value = d.branch || "";
-profileAddress.value = d.address || "";
-
-}
-
-
-const saveProfileBtn =
-document.getElementById("saveProfileBtn");
-
-if(saveProfileBtn){
-
-saveProfileBtn.onclick = async ()=>{
-
-await setDoc(
-doc(db,"employeeProfiles",uid),
-{
-name:profileName.value,
-phone:profilePhone.value,
-branch:profileBranch.value,
-address:profileAddress.value
-},
-{merge:true}
-);
-
-profileMsg.innerText="Saved";
-
-};
-
-}
-
-
-
-/* ================= REPORT ================= */
-
-async function loadReport(){
-
-const q =
-query(
-collection(db,"attendance"),
-where("uid","==",uid)
-);
-
-const snap =
-await getDocs(q);
-
-let total = 0;
-
-snap.forEach(()=>{
-total++;
-});
-
-reportBox.innerHTML = `
-Total Days : ${total}
-`;
-
-}
