@@ -8,12 +8,46 @@ overflow-x:hidden;
 }
 
 
-/* Header */
+/* ===== animated glow ===== */
+
+body::before{
+
+content:"";
+
+position:fixed;
+
+width:500px;
+height:500px;
+
+background:radial-gradient(circle,orange,transparent);
+
+top:-150px;
+left:-150px;
+
+opacity:0.4;
+
+animation:moveGlow 10s infinite alternate;
+
+}
+
+@keyframes moveGlow{
+
+0%{transform:translate(0,0)}
+
+100%{transform:translate(250px,200px)}
+
+}
+
+
+
+/* ===== header ===== */
 
 .header{
+
 display:flex;
 justify-content:space-between;
 align-items:center;
+
 padding:15px 25px;
 
 background:rgba(255,255,255,0.05);
@@ -21,68 +55,64 @@ backdrop-filter:blur(10px);
 
 border-bottom:1px solid rgba(255,255,255,0.2);
 
-box-shadow:0 0 20px rgba(255,150,0,0.5);
+box-shadow:0 0 20px orange;
+
 }
 
 .header h2{
+
 margin:0;
-font-weight:700;
-letter-spacing:1px;
 color:#ffd000;
 text-shadow:0 0 10px orange;
-}
-
-#logoutBtn{
-
-background:linear-gradient(45deg,#ff5e00,#ffb300);
-border:none;
-padding:8px 14px;
-border-radius:6px;
-cursor:pointer;
-font-weight:600;
-color:black;
-transition:0.3s;
 
 }
 
-#logoutBtn:hover{
+.headerRight button{
 
-transform:scale(1.1);
-box-shadow:0 0 15px orange;
+margin-left:10px;
 
 }
 
 
 
-/* Dashboard */
+/* ===== dashboard ===== */
 
 .dashboard{
 
 padding:20px;
 
+animation:fadeIn 0.5s;
+
+}
+
+@keyframes fadeIn{
+
+from{opacity:0}
+to{opacity:1}
+
 }
 
 
-/* Cards */
+
+/* ===== cards ===== */
 
 .cards{
 
 display:flex;
 gap:20px;
+flex-wrap:wrap;
+
 margin-bottom:20px;
 
 }
 
-
 .card{
 
-flex:1;
+flex:1 1 150px;
 
 padding:20px;
 
 text-align:center;
-
-font-size:18px;
 
 font-weight:600;
 
@@ -102,10 +132,9 @@ box-shadow:0 0 15px rgba(255,150,0,0.3);
 
 }
 
-
 .card:hover{
 
-transform:translateY(-5px) scale(1.03);
+transform:translateY(-5px) scale(1.05);
 
 box-shadow:0 0 25px orange;
 
@@ -115,7 +144,17 @@ background:rgba(255,150,0,0.2);
 
 
 
-/* Glass box */
+/* ===== section ===== */
+
+.section{
+
+animation:fadeIn 0.4s;
+
+}
+
+
+
+/* ===== glass ===== */
 
 .glass{
 
@@ -137,7 +176,7 @@ box-shadow:0 0 20px rgba(255,150,0,0.2);
 
 
 
-/* Button */
+/* ===== buttons ===== */
 
 button{
 
@@ -167,7 +206,7 @@ box-shadow:0 0 10px orange;
 
 
 
-/* Inputs */
+/* ===== input ===== */
 
 input{
 
@@ -190,12 +229,12 @@ outline:none;
 }
 
 
-/* Table */
+
+/* ===== table ===== */
 
 table{
 
 width:100%;
-
 border-collapse:collapse;
 
 }
@@ -218,30 +257,25 @@ background:rgba(255,150,0,0.3);
 
 
 
-/* Popup */
+/* ===== popup ===== */
 
 .popup{
 
 position:fixed;
 
 top:0;
-
 left:0;
-
 right:0;
-
 bottom:0;
 
 display:none;
 
 justify-content:center;
-
 align-items:center;
 
-background:rgba(0,0,0,0.6);
+background:rgba(0,0,0,0.7);
 
 }
-
 
 .popupBox{
 
@@ -259,35 +293,25 @@ box-shadow:0 0 20px orange;
 
 
 
-/* animation background glow */
+/* ===== report box ===== */
 
-body::before{
+#reportBox{
 
-content:"";
+font-size:18px;
+line-height:30px;
 
-position:fixed;
+color:#ffd000;
 
-width:400px;
-
-height:400px;
-
-background:radial-gradient(circle,orange,transparent);
-
-top:-100px;
-
-left:-100px;
-
-animation:moveGlow 8s infinite alternate;
-
-opacity:0.4;
+text-shadow:0 0 5px orange;
 
 }
 
 
-@keyframes moveGlow{
 
-0%{transform:translate(0,0)}
+/* ===== profile ===== */
 
-100%{transform:translate(200px,200px)}
+#profileSection input{
+
+margin-bottom:8px;
 
 }
