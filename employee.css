@@ -364,94 +364,47 @@ text-shadow:0 0 5px red;
 
 }
 
-/* ================= THEME SWITCH ================= */
+/* ===== notification ===== */
 
-const themeBtn =
-document.getElementById("themeBtn");
+#notifyBox{
 
-let themeIndex = 0;
+padding:10px;
 
-const themes = [
-"solarMode",
-"darkMode",
-"lightMode"
-];
+line-height:28px;
 
-if(themeBtn){
+color:#ffd000;
 
-themeBtn.onclick = ()=>{
-
-document.body.classList.remove(
-"solarMode",
-"darkMode",
-"lightMode"
-);
-
-themeIndex++;
-
-if(themeIndex>=themes.length)
-themeIndex=0;
-
-document.body.classList.add(
-themes[themeIndex]
-);
-
-};
+text-shadow:0 0 5px orange;
 
 }
 
 
 
-/* ================= NOTIFICATIONS ================= */
+/* ===== theme modes ===== */
 
-async function loadNotifications(){
+body.lightMode{
 
-const box =
-document.getElementById("notifyBox");
-
-if(!box) return;
-
-const snap =
-await getDocs(
-collection(db,"notifications")
-);
-
-if(snap.empty){
-
-box.innerText="No messages";
-return;
+background:white;
+color:black;
 
 }
 
-let html="";
+body.lightMode .glass{
 
-snap.forEach(doc=>{
-
-const d = doc.data();
-
-html += `
-<div>
-${d.text || ""}
-</div>
-`;
-
-});
-
-box.innerHTML = html;
+background:#f2f2f2;
+color:black;
 
 }
 
+body.darkMode{
 
-/* hook */
+background:black;
 
-const oldOpen2 = window.openSection;
-
-window.openSection = (id)=>{
-
-oldOpen2(id);
-
-if(id==="notifySection"){
-loadNotifications();
 }
 
-};
+body.solarMode{
+
+background:linear-gradient(135deg,#020024,#090979,#ff7b00);
+
+}
+
