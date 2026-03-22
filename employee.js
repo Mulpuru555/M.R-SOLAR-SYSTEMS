@@ -292,3 +292,152 @@ closePopup();
 loadRecords(uid);
 
 };
+/* ================= PROFILE SAVE ================= */
+
+import {
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const saveProfileBtn =
+document.getElementById("saveProfileBtn");
+
+if(saveProfileBtn){
+
+saveProfileBtn.onclick = async ()=>{
+
+if(!uid) return;
+
+const name =
+document.getElementById("profileName").value;
+
+const phone =
+document.getElementById("profilePhone").value;
+
+const branch =
+document.getElementById("profileBranch").value;
+
+const address =
+document.getElementById("profileAddress").value;
+
+
+await setDoc(
+doc(db,"employeeProfiles",uid),
+{
+name,
+phone,
+branch,
+address
+},
+{merge:true}
+);
+
+document.getElementById("profileMsg")
+.innerText="Saved";
+
+};
+
+}
+
+
+
+/* ================= LOAD PROFILE ================= */
+
+async function loadProfile(){
+
+if(!uid) return;
+
+const ref =
+doc(db,"employeeProfiles",uid);
+
+const snap =
+await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const d = snap.data();
+
+document.getElementById("profileName").value =
+d.name || "";
+
+document.getElementById("profilePhone").value =
+d.phone || "";
+
+document.getElementById("profileBranch").value =
+d.branch || "";
+
+document.getElementById("profileAddress").value =
+d.address || "";
+
+}
+
+
+
+/* ================= MONTHLY REPORT ================= */
+
+async function loadReport(){
+
+if(!uid) return;
+
+const box =
+document.getElementById("reportBox");
+
+if(!box) return;
+
+
+const q =
+query(
+collection(db,"attendance"),
+where("uid","==",uid)
+);
+
+const snap =
+await getDocs(q);
+
+let total = 0;
+let present = 0;
+
+snap.forEach(doc=>{
+
+total++;
+
+const d = doc.data();
+
+if(d.status==="Present"){
+present++;
+}
+
+});
+
+const absent =
+total - present;
+
+box.innerHTML = `
+Total Days : ${total}
+<br>
+Present : ${present}
+<br>
+Absent : ${absent}
+`;
+
+}
+
+
+
+/* ================= SECTION HOOK ================= */
+
+const oldOpen = window.openSection;
+
+window.openSection = (id)=>{
+
+oldOpen(id);
+
+if(id==="profileSection"){
+loadProfile();
+}
+
+if(id==="reportSection"){
+loadReport();
+}
+
+};
