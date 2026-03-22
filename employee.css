@@ -1,4 +1,4 @@
-css- body{
+body{
 
 margin:0;
 font-family:Montserrat;
@@ -53,6 +53,13 @@ transition:0.3s;
 
 background:#ff8c00;
 transform:scale(1.05);
+
+}
+
+
+.section{
+
+display:none;
 
 }
 
