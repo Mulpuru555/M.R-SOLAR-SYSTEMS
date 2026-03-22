@@ -9,7 +9,8 @@ addDoc,
 serverTimestamp,
 doc,
 updateDoc,
-getDoc
+getDoc,
+setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -88,18 +89,50 @@ location.href="index.html";
 
 /* ================= SECTION SWITCH ================= */
 
+let currentSection = "";
+
 window.openSection = (id)=>{
 
-const a = document.getElementById("attendanceSection");
-const b = document.getElementById("erpSection");
+const sections = [
+"attendanceSection",
+"erpSection",
+"profileSection",
+"reportSection"
+];
 
-if(a) a.style.display="none";
-if(b) b.style.display="none";
+sections.forEach(s=>{
 
-const target = document.getElementById(id);
-if(target) target.style.display="block";
+const el = document.getElementById(s);
+
+if(!el) return;
+
+if(s === id){
+
+if(currentSection === id){
+
+el.style.display="none";
+currentSection="";
+
+}else{
+
+el.style.display="block";
+currentSection=id;
+
+if(id==="profileSection") loadProfile();
+if(id==="reportSection") loadReport();
+
+}
+
+}else{
+
+el.style.display="none";
+
+}
+
+});
 
 };
+
 
 
 /* ================= ADD PAYMENT ================= */
@@ -221,8 +254,6 @@ table.insertAdjacentHTML(
 });
 
 
-/* attach edit buttons */
-
 document.querySelectorAll(".editBtn")
 .forEach(btn=>{
 
@@ -246,6 +277,7 @@ rec.data.totalAmount
 });
 
 }
+
 
 
 /* ================= EDIT ================= */
@@ -292,14 +324,30 @@ closePopup();
 loadRecords(uid);
 
 };
-/* ================= PROFILE SAVE ================= */
-/* ================= PROFILE SAVE ================= */
 
-import {
-setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let profileLoaded = false;
+
+/* ================= PROFILE ================= */
+
+async function loadProfile(){
+
+const ref =
+doc(db,"employeeProfiles",uid);
+
+const snap =
+await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const d = snap.data();
+
+profileName.value = d.name || "";
+profilePhone.value = d.phone || "";
+profileBranch.value = d.branch || "";
+profileAddress.value = d.address || "";
+
+}
+
 
 const saveProfileBtn =
 document.getElementById("saveProfileBtn");
@@ -308,35 +356,18 @@ if(saveProfileBtn){
 
 saveProfileBtn.onclick = async ()=>{
 
-if(!uid) return;
-
-const name =
-document.getElementById("profileName").value;
-
-const phone =
-document.getElementById("profilePhone").value;
-
-const branch =
-document.getElementById("profileBranch").value;
-
-const address =
-document.getElementById("profileAddress").value;
-
 await setDoc(
 doc(db,"employeeProfiles",uid),
 {
-name,
-phone,
-branch,
-address,
-saved:true
+name:profileName.value,
+phone:profilePhone.value,
+branch:profileBranch.value,
+address:profileAddress.value
 },
 {merge:true}
 );
 
-document.getElementById("profileMsg").innerText="Saved";
-
-profileLoaded = true;
+profileMsg.innerText="Saved";
 
 };
 
@@ -344,80 +375,9 @@ profileLoaded = true;
 
 
 
-/* ================= LOAD PROFILE ================= */
+/* ================= REPORT ================= */
 
-async function loadProfile(){
-
-if(!uid) return;
-
-if(profileLoaded) return;
-
-const ref =
-doc(db,"employeeProfiles",uid);
-
-const snap =
-await getDoc(ref);
-
-if(!snap.exists()) return;
-
-const d = snap.data();
-
-document.getElementById("profileName").value =
-d.name || "";
-
-document.getElementById("profilePhone").value =
-d.phone || "";
-
-document.getElementById("profileBranch").value =
-d.branch || "";
-
-document.getElementById("profileAddress").value =
-d.address || "";
-
-profileLoaded = true;
-
-}
-/* ================= LOAD PROFILE ================= */
-
-async function loadProfile(){
-
-if(!uid) return;
-
-const ref =
-doc(db,"employeeProfiles",uid);
-
-const snap =
-await getDoc(ref);
-
-if(!snap.exists()) return;
-
-const d = snap.data();
-
-document.getElementById("profileName").value =
-d.name || "";
-
-document.getElementById("profilePhone").value =
-d.phone || "";
-
-document.getElementById("profileBranch").value =
-d.branch || "";
-
-document.getElementById("profileAddress").value =
-d.address || "";
-
-}
-
-
-
-/* ================= MONTHLY REPORT ================= */
 async function loadReport(){
-
-if(!uid) return;
-
-const box =
-document.getElementById("reportBox");
-
-if(!box) return;
 
 const q =
 query(
@@ -429,273 +389,13 @@ const snap =
 await getDocs(q);
 
 let total = 0;
-let present = 0;
 
-snap.forEach(doc=>{
-
+snap.forEach(()=>{
 total++;
-
-const d = doc.data();
-
-if(
-d.status==="Present" ||
-d.present===true ||
-d.marked===true
-){
-present++;
-}
-
 });
 
-const absent =
-total - present;
-
-box.innerHTML = `
+reportBox.innerHTML = `
 Total Days : ${total}
-<br>
-Present : ${present}
-<br>
-Absent : ${absent}
 `;
 
 }
-/* ================= SECTION HOOK ================= */
-
-let currentSection = "";
-
-window.openSection = (id)=>{
-
-const sections = [
-"attendanceSection",
-"erpSection",
-"profileSection",
-"reportSection",
-"notifySection"
-];
-
-sections.forEach(s=>{
-
-const el = document.getElementById(s);
-
-if(!el) return;
-
-if(s === id){
-
-if(currentSection === id){
-
-el.style.display="none";
-currentSection="";
-
-}
-else{
-
-el.style.display="block";
-currentSection=id;
-
-}
-
-}
-else{
-
-el.style.display="none";
-
-}
-
-});
-
-};
-
-/* ================= GPS STATUS FIX ================= */
-
-/* ================= GPS STATUS FIX ================= */
-
-const distBox =
-document.getElementById("distanceDisplay");
-
-const gpsStatus =
-document.getElementById("gpsStatus");
-
-if(distBox){
-
-setInterval(()=>{
-
-const txt =
-distBox.innerText.toLowerCase();
-
-if(txt.includes("inside")){
-
-gpsStatus.innerText =
-"GPS: Inside Office";
-
-gpsStatus.className="gpsInside";
-
-}
-else if(txt.includes("outside")){
-
-gpsStatus.innerText =
-"GPS: Outside Office";
-
-gpsStatus.className="gpsOutside";
-
-}
-else{
-
-gpsStatus.innerText =
-"GPS: Checking...";
-
-}
-
-},300);
-
-}
-/* ================= THEME SWITCH ================= */
-
-const themeBtn =
-document.getElementById("themeBtn");
-
-let themeIndex = 0;
-
-const themes = [
-"solarMode",
-"darkMode",
-"lightMode"
-];
-
-if(themeBtn){
-
-themeBtn.onclick = ()=>{
-
-document.body.classList.remove(
-"solarMode",
-"darkMode",
-"lightMode"
-);
-
-themeIndex++;
-
-if(themeIndex>=themes.length)
-themeIndex=0;
-
-document.body.classList.add(
-themes[themeIndex]
-);
-
-};
-
-}
-
-
-
-/* ================= NOTIFICATIONS ================= */
-
-async function loadNotifications(){
-
-const box =
-document.getElementById("notifyBox");
-
-if(!box) return;
-
-const snap =
-await getDocs(
-collection(db,"notifications")
-);
-
-if(snap.empty){
-
-box.innerText="No messages";
-return;
-
-}
-
-let html="";
-
-snap.forEach(doc=>{
-
-const d = doc.data();
-
-html += `
-<div>
-${d.text || ""}
-</div>
-`;
-
-});
-
-box.innerHTML = html;
-
-}
-
-
-/* hook */
-
-const oldOpen2 = window.openSection;
-
-window.openSection = (id)=>{
-
-oldOpen2(id);
-
-if(id==="notifySection"){
-loadNotifications();
-}
-
-};
-
-/* ================= LIVE CLOCK ================= */
-
-const clockBox =
-document.getElementById("liveClock");
-
-if(clockBox){
-
-setInterval(()=>{
-
-const d = new Date();
-
-clockBox.innerText =
-d.toLocaleTimeString();
-
-},1000);
-
-}
-
-
-
-/* ================= WELCOME NAME ================= */
-
-async function loadWelcome(){
-
-if(!uid) return;
-
-const snap =
-await getDoc(
-doc(db,"employeeProfiles",uid)
-);
-
-if(!snap.exists()) return;
-
-const d = snap.data();
-
-const box =
-document.getElementById("welcomeText");
-
-if(box){
-
-box.innerText =
-"Welcome " + (d.name || "");
-
-}
-
-}
-
-
-/* hook */
-
-const oldOpen3 = window.openSection;
-
-window.openSection = (id)=>{
-
-oldOpen3(id);
-
-loadWelcome();
-
-};
