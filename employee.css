@@ -315,3 +315,51 @@ text-shadow:0 0 5px orange;
 margin-bottom:8px;
 
 }
+/* ===== GPS PANEL ===== */
+
+.gpsBox{
+
+padding:10px;
+
+margin-bottom:10px;
+
+border-radius:8px;
+
+background:rgba(0,0,0,0.3);
+
+border:1px solid rgba(255,255,255,0.2);
+
+box-shadow:0 0 10px orange;
+
+}
+
+
+#gpsStatus{
+
+font-weight:600;
+
+margin-bottom:5px;
+
+color:#ffd000;
+
+text-shadow:0 0 5px orange;
+
+}
+
+
+.gpsInside{
+
+color:lightgreen;
+
+text-shadow:0 0 5px green;
+
+}
+
+
+.gpsOutside{
+
+color:red;
+
+text-shadow:0 0 5px red;
+
+}
