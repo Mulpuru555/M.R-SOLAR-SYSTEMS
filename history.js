@@ -79,8 +79,10 @@ const time =
 r.data?.data?.time?.seconds
 ? new Date(
 r.data.data.time.seconds*1000
-).toLocaleTimeString()
-: "-";
+).toLocaleTimeString(
+[],
+{ hour12:true }
+)
 
 
 table.insertAdjacentHTML(
