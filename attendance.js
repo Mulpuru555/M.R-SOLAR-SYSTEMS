@@ -390,18 +390,12 @@ present++;
 }
 
 
-/* percent from 100 */
-
-let percent = 100;
+let percent = 0;
 
 if(workingDays>0){
 
-const absent =
-workingDays - present;
-
 percent =
-100 -
-(absent/workingDays*100);
+(present / workingDays) * 100;
 
 percent =
 percent.toFixed(1);
