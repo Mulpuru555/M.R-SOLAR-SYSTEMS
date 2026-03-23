@@ -2,7 +2,9 @@ import { auth, db } from "./firebase-config.js";
 
 import {
 doc,
-getDoc
+getDoc,
+getDocs,
+collection
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -11,7 +13,6 @@ onAuthStateChanged
 
 
 let uid = "";
-
 
 onAuthStateChanged(auth, async (user)=>{
 
@@ -34,13 +35,23 @@ if(!table) return;
 table.innerHTML = "";
 
 
-const today = new Date();
+/* get all date docs inside attendance/uid */
 
-for(let i=0;i<31;i++){
+const snap =
+await getDocs(
+collection(db,"attendance",uid,"")
+).catch(()=>null);
+
+
+/* fallback method */
+
+const days = 31;
+
+for(let i=0;i<days;i++){
 
 const d = new Date();
 
-d.setDate(today.getDate()-i);
+d.setDate(d.getDate()-i);
 
 const dateStr =
 d.toISOString().split("T")[0];
@@ -55,25 +66,25 @@ dateStr,
 "data"
 );
 
-const snap =
+const s =
 await getDoc(ref);
 
-if(!snap.exists()) continue;
+if(!s.exists()) continue;
 
+
+const t =
+s.data().time;
 
 let time = "-";
-
-const t = snap.data().time;
 
 if(t?.seconds){
 
 time =
 new Date(
 t.seconds*1000
-).toLocaleTimeString(
-[],
-{hour12:true}
-);
+).toLocaleTimeString([],{
+hour12:true
+});
 
 }
 
