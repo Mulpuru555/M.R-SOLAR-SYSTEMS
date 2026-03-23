@@ -36,37 +36,49 @@ if(!table) return;
 table.innerHTML = "";
 
 
-const colRef =
-collection(db,"attendance",uid);
+/* get dates */
 
-const snap =
-await getDocs(colRef);
+const userRef =
+doc(db,"attendance",uid);
+
+const datesSnap =
+await getDocs(
+collection(userRef)
+);
 
 
-for (const d of snap.docs){
+for(const d of datesSnap.docs){
 
 const date = d.id;
 
 const dataRef =
-doc(db,"attendance",uid,date,"data");
+doc(
+db,
+"attendance",
+uid,
+date,
+"data"
+);
 
-const dataSnap =
+const snap =
 await getDoc(dataRef);
 
 let time = "-";
 
-if(dataSnap.exists()){
+if(snap.exists()){
 
-const t = dataSnap.data().time;
+const t =
+snap.data().time;
 
 if(t?.seconds){
 
 time =
 new Date(
 t.seconds*1000
-).toLocaleTimeString([],{
-hour12:true
-});
+).toLocaleTimeString(
+[],
+{hour12:true}
+);
 
 }
 
