@@ -93,8 +93,8 @@ pending++;
 
 });
 
-document.getElementById("totalBox").innerText = total;
-document.getElementById("pendingBox").innerText = pending;
+document.getElementById("totalStat").innerText = total;
+document.getElementById("pendingStat").innerText = pending;
 
 
 /* TODAY */
@@ -118,7 +118,7 @@ if(aSnap.exists()){
 todayStatus = "YES";
 }
 
-document.getElementById("todayBox").innerText =
+document.getElementById("todayStat").innerText =
 todayStatus;
 
 }
