@@ -124,7 +124,6 @@ console.log(e);
 
 /* ================= STATS ================= */
 
-import { auth, db } from "./firebase-config.js";
 
 import {
 collection,
