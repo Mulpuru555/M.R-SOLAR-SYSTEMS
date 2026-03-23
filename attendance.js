@@ -87,12 +87,15 @@ async function initializeAttendance(user) {
   }
 
   startCountdown();
-  startLocationTracking();
+
+  setTimeout(() => {
+    startLocationTracking();
+  }, 500);
+
   loadMonthlySummary(user);
 
   setInterval(() => checkAndHandleAbsence(user), 60000);
 }
-
 
 /* ===========================
    CHECK IF TODAY WORKING
