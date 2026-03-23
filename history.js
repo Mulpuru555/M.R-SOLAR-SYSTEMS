@@ -36,15 +36,15 @@ if(!table) return;
 table.innerHTML = "";
 
 
-/* get all date docs */
+/* get all dates */
 
-const snap =
+const datesSnap =
 await getDocs(
 collection(db,"attendance",uid)
 );
 
 
-for(const d of snap.docs){
+for(const d of datesSnap.docs){
 
 const date = d.id;
 
@@ -57,15 +57,15 @@ date,
 "data"
 );
 
-const dataSnap =
+const snap =
 await getDoc(dataRef);
 
-let time = "-";
-
-if(dataSnap.exists()){
+if(!snap.exists()) continue;
 
 const t =
-dataSnap.data().time;
+snap.data().time;
+
+let time = "-";
 
 if(t?.seconds){
 
@@ -78,17 +78,13 @@ hour12:true
 
 }
 
-}
-
-table.insertAdjacentHTML(
-"beforeend",
+table.innerHTML +=
 `
 <tr>
 <td>${date}</td>
 <td>${time}</td>
 </tr>
-`
-);
+`;
 
 }
 
