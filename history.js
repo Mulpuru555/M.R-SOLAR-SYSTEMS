@@ -36,18 +36,21 @@ if(!table) return;
 table.innerHTML = "";
 
 
-/* get dates */
+/* get all dates */
 
-const userRef =
+const userDocRef =
 doc(db,"attendance",uid);
 
-const datesSnap =
-await getDocs(
-collection(userRef)
-);
+const datesCol =
+collection(userDocRef,"dates"); // fake name to read docs
 
 
-for(const d of datesSnap.docs){
+try{
+
+const snap =
+await getDocs(datesCol);
+
+for(const d of snap.docs){
 
 const date = d.id;
 
@@ -60,15 +63,15 @@ date,
 "data"
 );
 
-const snap =
+const dataSnap =
 await getDoc(dataRef);
 
 let time = "-";
 
-if(snap.exists()){
+if(dataSnap.exists()){
 
 const t =
-snap.data().time;
+dataSnap.data().time;
 
 if(t?.seconds){
 
@@ -93,6 +96,12 @@ table.insertAdjacentHTML(
 </tr>
 `
 );
+
+}
+
+}catch(e){
+
+console.log("History read error",e);
 
 }
 
