@@ -36,19 +36,13 @@ if(!table) return;
 table.innerHTML = "";
 
 
-/* get all dates */
-
-const userDocRef =
-doc(db,"attendance",uid);
-
-const datesCol =
-collection(userDocRef,"dates"); // fake name to read docs
-
-
-try{
+/* get all date docs */
 
 const snap =
-await getDocs(datesCol);
+await getDocs(
+collection(db,"attendance",uid)
+);
+
 
 for(const d of snap.docs){
 
@@ -78,10 +72,9 @@ if(t?.seconds){
 time =
 new Date(
 t.seconds*1000
-).toLocaleTimeString(
-[],
-{hour12:true}
-);
+).toLocaleTimeString([],{
+hour12:true
+});
 
 }
 
@@ -96,12 +89,6 @@ table.insertAdjacentHTML(
 </tr>
 `
 );
-
-}
-
-}catch(e){
-
-console.log("History read error",e);
 
 }
 
