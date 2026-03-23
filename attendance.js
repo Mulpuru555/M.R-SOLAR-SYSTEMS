@@ -316,13 +316,13 @@ async function loadMonthlySummary(user) {
 const today = new Date();
 
 const year = today.getFullYear();
-const month = today.getMonth();
+const month = today.getMonth() + 1;
 
 let workingDays = 0;
 let present = 0;
 
 
-/* holidays */
+/* ================= HOLIDAYS ================= */
 
 const holidaySnap =
 await getDocs(
@@ -341,6 +341,29 @@ holidays.add(d.id);
 });
 
 
+/* ================= GET ATTENDANCE ================= */
+
+const attSnap =
+await getDocs(
+query(
+collection(db,"attendance"),
+where("employeeId","==",user.uid)
+)
+);
+
+const presentDates = new Set();
+
+attSnap.forEach(d=>{
+const data = d.data();
+
+if(data.date){
+presentDates.add(data.date);
+}
+});
+
+
+/* ================= LOOP DAYS ================= */
+
 for(
 let d=1;
 d<=today.getDate();
@@ -348,7 +371,7 @@ d++
 ){
 
 const dateObj =
-new Date(year,month,d);
+new Date(year,month-1,d);
 
 const dateStr =
 dateObj.toISOString().split("T")[0];
@@ -371,24 +394,14 @@ workingDays++;
 
 /* check attendance */
 
-const ref =
-doc(
-db,
-"attendance",
-user.uid,
-dateStr,
-"data"
-);
-
-const snap =
-await getDoc(ref);
-
-if(snap.exists()){
+if(presentDates.has(dateStr)){
 present++;
 }
 
 }
 
+
+/* ================= PERCENT ================= */
 
 let percent = 0;
 
@@ -403,11 +416,14 @@ percent.toFixed(1);
 }
 
 
-document.getElementById("percentStat").innerText =
-percent + "%";
+const box =
+document.getElementById("percentStat");
 
+if(box){
+box.innerText = percent + "%";
 }
 
+}
 /* ===========================
    AUTO BLOCK
 =========================== */
