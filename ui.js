@@ -21,30 +21,28 @@ if(l) l.style.display="none";
 
 setInterval(()=>{
 
-const c =
+const el =
 document.getElementById("liveClock");
 
-if(!c) return;
+if(!el) return;
 
 const now = new Date();
 
-let h =
-now.getHours()
-.toString()
-.padStart(2,"0");
+let h = now.getHours();
+let m = now.getMinutes();
+let s = now.getSeconds();
 
-let m =
-now.getMinutes()
-.toString()
-.padStart(2,"0");
+let ampm = h >= 12 ? "PM" : "AM";
 
-let s =
-now.getSeconds()
-.toString()
-.padStart(2,"0");
+h = h % 12;
+if(h == 0) h = 12;
 
-c.innerText =
-h + ":" + m + ":" + s;
+h = h.toString().padStart(2,"0");
+m = m.toString().padStart(2,"0");
+s = s.toString().padStart(2,"0");
+
+el.innerText =
+h + ":" + m + ":" + s + " " + ampm;
 
 },1000);
 
