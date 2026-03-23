@@ -334,10 +334,10 @@ db,
 )
 );
 
-const holidaySet = new Set();
+const holidays = new Set();
 
 holidaySnap.forEach(d=>{
-holidaySet.add(d.id);
+holidays.add(d.id);
 });
 
 
@@ -351,9 +351,7 @@ const dateObj =
 new Date(year,month,d);
 
 const dateStr =
-dateObj
-.toISOString()
-.split("T")[0];
+dateObj.toISOString().split("T")[0];
 
 
 /* skip sunday */
@@ -364,7 +362,7 @@ continue;
 
 /* skip holiday */
 
-if(holidaySet.has(dateStr))
+if(holidays.has(dateStr))
 continue;
 
 
@@ -392,7 +390,7 @@ present++;
 }
 
 
-/* percentage from 100 */
+/* percent from 100 */
 
 let percent = 100;
 
@@ -403,7 +401,7 @@ workingDays - present;
 
 percent =
 100 -
-(absent / workingDays * 100);
+(absent/workingDays*100);
 
 percent =
 percent.toFixed(1);
@@ -413,6 +411,7 @@ percent.toFixed(1);
 
 document.getElementById("percentStat").innerText =
 percent + "%";
+
 }
 
 /* ===========================
